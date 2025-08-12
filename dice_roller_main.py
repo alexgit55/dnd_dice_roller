@@ -22,54 +22,79 @@ class DiceRollerApp(tk.Tk):
         top_frame=tk.Frame(self, bg="lightblue")
         self.frames[0]=top_frame
         top_frame.pack(fill=tk.X)
-        dice_roll_type=tk.Label(top_frame, bg="lightblue", text="Select which dtype of roll you want to perform: ")
-        dice_roll_type.pack(pady=20)       
-        tk.Radiobutton(top_frame, bg="lightblue", text="General Dice Roll", variable=self.frame_variable, value=2,
-                   command=self.show_frame).pack()
-        tk.Radiobutton(top_frame, bg="lightblue", text="Skill Check", variable=self.frame_variable, value=3,
-                   command=self.show_frame).pack()
-        tk.Radiobutton(top_frame, bg="lightblue", text="Saving Throw", variable=self.frame_variable, value=4,
-                   command=self.show_frame).pack()
+        dice_roll_type=tk.Label(
+            top_frame, bg="lightblue",
+            text="Select which dtype of roll you want to perform: ")
+        dice_roll_type.pack(pady=20)
+        tk.Radiobutton(
+            top_frame, bg="lightblue",
+            text="General Dice Roll", variable=self.frame_variable, value=2,
+            command=self.show_frame).pack()
+        tk.Radiobutton(
+            top_frame, bg="lightblue",
+            text="Skill Check", variable=self.frame_variable, value=3,
+            command=self.show_frame).pack()
+        tk.Radiobutton(
+            top_frame, bg="lightblue",
+            text="Saving Throw", variable=self.frame_variable, value=4,
+            command=self.show_frame).pack()
         top_frame.pack()
-        
         # Create a separator
-        separator = tk.Frame(top_frame, height=2, bd=1, relief=tk.SUNKEN, bg="lightblue")
+        separator = tk.Frame(
+            top_frame, height=2, bd=1, relief=tk.SUNKEN, bg="lightblue")
         separator.pack(fill=tk.X, padx=5, pady=5)
-        
         #General Frame
         general_frame=tk.Frame(self, bg="lightblue")
         self.frames[2]=general_frame
         dice_type=tk.StringVar(general_frame)
         dice_type.set("d20")  # Default value
-        dice_type_label=tk.Label(general_frame, bg="lightblue", text="Select the dtype of Dice to Roll:")
+        dice_type_label=tk.Label(
+            general_frame, bg="lightblue", 
+            text="Select the dtype of Dice to Roll:")
         dice_type_label.pack()
-        dice_type_menu=tk.OptionMenu(general_frame, dice_type, "d4", "d6", "d8", "d10", "d12", "d20")
+        dice_type_menu=tk.OptionMenu(
+            general_frame, 
+            dice_type, "d4", "d6", "d8", "d10", "d12", "d20"
+        )
         dice_type_menu.config(bg="lightblue")
         dice_type_menu.pack()
-        number_of_dice_label=tk.Label(general_frame, bg="lightblue", text="How many Dice to Roll?")
+        number_of_dice_label=tk.Label(
+            general_frame, bg="lightblue", text="How many Dice to Roll?")
         number_of_dice_label.pack()
-        number_of_dice=tk.Spinbox(general_frame, bg="lightblue", from_=1, to=20, width=5)
+        number_of_dice=tk.Spinbox(
+            general_frame, bg="lightblue", from_=1, to=20, width=5)
         number_of_dice.pack()
-        dice_modifier_label=tk.Label(general_frame, bg="lightblue", text="Modifier to add to the roll?")
+        dice_modifier_label=tk.Label(
+            general_frame, bg="lightblue", text="Modifier to add to the roll?")
         dice_modifier_label.pack()
-        dice_modifier=tk.Spinbox(general_frame, bg="lightblue", from_=-20, to=20, width=5,textvariable=tk.IntVar(general_frame, value=0))
+        dice_modifier=tk.Spinbox(
+            general_frame, bg="lightblue", from_=-20, to=20, width=5,
+            textvariable=tk.IntVar(general_frame, value=0))
         dice_modifier.pack()
         general_frame.pack(fill=tk.X, pady=10)
         
         # Skill Check Frame
         skill_check_frame=tk.Frame(self, bg="lightblue")
         self.frames[3]=skill_check_frame
-        skill_check_label=tk.Label(skill_check_frame, bg="lightblue", text="Which Skill check to roll?")
+        skill_check_label=tk.Label(
+            skill_check_frame, bg="lightblue", text="Which Skill check to roll?")
         skill_check_label.pack()
         # Combobox for skill selection
-        self.skill_combobox = tk.ttk.Combobox(skill_check_frame, values=list(Skills.skill_ability_map.keys()))
+        self.skill_combobox = tk.ttk.Combobox(
+            skill_check_frame, values=list(Skills.ability_map.keys()))
         self.skill_combobox.pack()
         skill_check_frame.pack()
         
         #Saving Throw Frame
         saving_throw_frame=tk.Frame(self, bg="lightblue")
-        saving_throw_label=tk.Label(saving_throw_frame, bg="lightblue", text="Which Saving Throw to Roll?")
+        saving_throw_label=tk.Label(
+            saving_throw_frame, bg="lightblue", 
+            text="Which Saving Throw to Roll?")
         saving_throw_label.pack()
+        # Combobox for saving throw selection
+        self.saving_throw_combobox = tk.ttk.Combobox(
+            saving_throw_frame, values=list(SavingThrows.ability_map.keys()))
+        self.saving_throw_combobox.pack()
         self.frames[4]=saving_throw_frame
         saving_throw_frame.pack()
         
@@ -77,13 +102,17 @@ class DiceRollerApp(tk.Tk):
         bottom_frame=tk.Frame(self, bg="lightblue")
         self.frames[1]=bottom_frame
         # Create a separator
-        separator = tk.Frame(bottom_frame, height=2, bd=1, relief=tk.SUNKEN, bg="lightblue")
+        separator = tk.Frame(
+            bottom_frame, height=2, bd=1, relief=tk.SUNKEN, bg="lightblue")
         separator.pack(fill=tk.X, padx=5, pady=5)
-        roll_button=tk.Button(bottom_frame, text="Roll Dice", command=self.roll_dice)
+        roll_button=tk.Button(
+            bottom_frame, text="Roll Dice", command=self.roll_dice)
         roll_button.pack(pady=20)
-        reset_button=tk.Button(bottom_frame, text="Reset", command=self.reset_values)
+        reset_button=tk.Button(
+            bottom_frame, text="Reset", command=self.reset_values)
         reset_button.pack(pady=5)
-        self.result_label=tk.Label(bottom_frame, bg="lightblue", text="", font=("Arial", 12))
+        self.result_label=tk.Label(
+            bottom_frame, bg="lightblue", text="", font=("Arial", 12))
         self.result_label.pack()
         bottom_frame.pack(fill=tk.X, pady=10)
     
@@ -119,29 +148,55 @@ class DiceRollerApp(tk.Tk):
                 rolls.append(roll)
             result=sum(rolls)+dice_modifier
             if dice_modifier < 0:
-                self.result_label.config(text=f"Rolls: {rolls} - {abs(dice_modifier)}, Total: {result}")
+                self.result_label.config(
+                    text=f"Rolls: {rolls} - {abs(dice_modifier)}, Total: {result}")
             elif dice_modifier > 0:
-                self.result_label.config(text=f"Rolls: {rolls} + {dice_modifier}, Total: {result}")
+                self.result_label.config(
+                    text=f"Rolls: {rolls} + {dice_modifier}, Total: {result}")
             else:
                 self.result_label.config(text=f"Rolls: {rolls}, Total: {result}")
         if frame == 3:  # Skill Check
             selected_skill = self.skill_combobox.get()
-            if (self.player_character.skills.has_advantage(selected_skill)):
+            if self.player_character.skills.has_advantage(selected_skill):
                 rolls = (random.randint(1, 20), random.randint(1, 20))
                 roll = max(rolls)
-            elif (self.player_character.skills.has_disadvantage(selected_skill)):
+            elif self.player_character.skills.has_disadvantage(selected_skill):
                 rolls = (random.randint(1, 20), random.randint(1, 20))
                 roll = min(rolls)
             else:
                 roll = random.randint(1, 20)
                 rolls = (roll,)
             if selected_skill and self.player_character:
-                modifier = self.player_character.get_skill_modifier(selected_skill)
+                modifier = self.player_character.get_check_modifier(
+                    selected_skill, check_type="skill")
                 total = roll + modifier
                 if modifier < 0:
-                    self.result_label.config(text=f"{selected_skill}: {roll} - {abs(modifier)} = {total}")
+                    self.result_label.config(
+                        text=f"{selected_skill}: {roll} - {abs(modifier)} = {total}")
                 else:
-                    self.result_label.config(text=f"{selected_skill}: {roll} + {modifier} = {total}")
+                    self.result_label.config(
+                        text=f"{selected_skill}: {roll} + {modifier} = {total}")
+        if frame == 4:  # Saving Throw
+            selected_saving_throw = self.saving_throw_combobox.get()
+            if self.player_character.saving_throws.has_advantage(selected_saving_throw):
+                rolls = (random.randint(1, 20), random.randint(1, 20))
+                roll = max(rolls)
+            elif self.player_character.saving_throws.has_disadvantage(selected_saving_throw):
+                rolls = (random.randint(1, 20), random.randint(1, 20))
+                roll = min(rolls)
+            else:
+                roll = random.randint(1, 20)
+                rolls = (roll,)
+            if selected_saving_throw and self.player_character:
+                modifier = self.player_character.get_check_modifier(
+                    selected_saving_throw, check_type="save")
+                total = roll + modifier
+                if modifier < 0:
+                    self.result_label.config(
+                        text=f"{selected_saving_throw}: {roll} - {abs(modifier)} = {total}")
+                else:
+                    self.result_label.config(
+                        text=f"{selected_saving_throw}: {roll} + {modifier} = {total}")
 
 if __name__ == "__main__":
     John = character.Character(name="John", proficiency_bonus=4)
@@ -150,6 +205,7 @@ if __name__ == "__main__":
         ["Animal Handling", "Athletics", "Intimidation", "Perception", "Survival"])
     John.set_skill_advantages(["Deception","Sleight of Hand"])
     John.set_skill_disadvantages(["Stealth"])
+    John.set_save_advantages(["Intelligence","Wisdom","Charisma"])
     John.set_ability_score("Strength", 19)
     John.set_ability_score("Dexterity", 14)
     John.set_ability_score("Constitution", 18)
