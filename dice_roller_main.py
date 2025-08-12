@@ -6,17 +6,85 @@ import character
 from skills_saves import SavingThrows, Skills
 
 class DiceRollerApp(tk.Tk):
+    """A Tkinter-based GUI application for rolling dice in Dungeons & Dragons (D&D) games.
+    The DiceRollerApp provides an interactive interface for players to perform general dice rolls,
+    skill checks, and saving throws, supporting advantage/disadvantage mechanics and modifiers.
+    It is designed to work with a PlayerCharacter object that supplies skill and saving throw data.
+    Attributes:
+        player_character: The PlayerCharacter instance representing the current player.
+        frame_variable (tk.IntVar): Tracks which roll type frame is currently selected.
+        advantage_var (tk.IntVar): Tracks the advantage/disadvantage/normal state.
+        frames (dict): Stores references to the main UI frames.
+        skill_combobox (tk.ttk.Combobox): Dropdown for selecting skills.
+        saving_throw_combobox (tk.ttk.Combobox): Dropdown for selecting saving throws.
+        result_label (tk.Label): Displays the result of the most recent roll.
+    Methods:
+        __init__(self, player_character):
+            Initializes the application window, sets up variables, and builds the UI.
+        _roll_check(self, check_type, combobox):
+            Performs a skill check or saving throw roll, applying advantage/disadvantage and modifiers,
+            and updates the result label.
+        create_widgets(self):
+            Constructs and packs all UI widgets, including frames, buttons, labels, and input controls.
+        show_frame(self):
+            Displays the appropriate frame based on the selected roll type.
+        reset_values(self):
+            Resets all input fields to their default values.
+        update_advantage_disadvantage(self, check_type="skill", event=None):
+            Updates the advantage/disadvantage state based on the selected skill or saving throw.
+        roll_dice(self):
+            Handles the logic for rolling dice based on the selected frame (general, skill, or save),
+            retrieves input values, performs the roll(s), and updates the result label.
+    """
+    
     def __init__(self, player_character):
         super().__init__()
         self.title("D&D Dice Roller")
         self.config(bg="lightblue")  # Add this line
         self.frame_variable=tk.IntVar(self)
         self.frame_variable.set(3)  # Default to Skill Check
+        self.advantage_var = tk.IntVar(self)
+        self.advantage_var.set(0)  # Default to Normal
         self.frames={}
         self.create_widgets()
         self.show_frame() # Display the initial frame
         self.player_character = player_character
 
+    def _roll_check(self, check_type, combobox):
+        """
+        Rolls a d20 check for the selected ability or skill, applying advantage or disadvantage if specified,
+        and updates the result label with the roll breakdown and total.
+
+        Args:
+            check_type (str): The type of check being performed (e.g., 'ability', 'skill').
+            combobox (tkinter.ttk.Combobox): The combobox widget containing the selectable abilities or skills.
+
+        Behavior:
+            - Retrieves the selected ability or skill from the combobox.
+            - Gets the corresponding modifier from the player character.
+            - Rolls a d20, applying advantage (highest of two rolls) or disadvantage (lowest of two rolls) if set.
+            - Calculates the total by adding the modifier to the roll.
+            - Updates the result label to display the roll, modifier, and total in a formatted string.
+        """
+        selected = combobox.get()
+        modifier = self.player_character.get_check_modifier(selected, check_type)
+        if self.advantage_var.get() == 1:  # Advantage
+            rolls = (random.randint(1, 20), random.randint(1, 20))
+            roll = max(rolls)
+        elif self.advantage_var.get() == 2:  # Disadvantage
+            rolls = (random.randint(1, 20), random.randint(1, 20))
+            roll = min(rolls)
+        else:
+            roll = random.randint(1, 20)
+            rolls = (roll,)
+        total = roll + modifier
+        if modifier < 0:
+            self.result_label.config(
+                text=f"{selected}: {roll} - {abs(modifier)} = {total}")
+        else:
+            self.result_label.config(
+                text=f"{selected}: {roll} + {modifier} = {total}")
+    
     def create_widgets(self):
         #Top Frame
         top_frame=tk.Frame(self, bg="lightblue")
@@ -49,11 +117,11 @@ class DiceRollerApp(tk.Tk):
         dice_type=tk.StringVar(general_frame)
         dice_type.set("d20")  # Default value
         dice_type_label=tk.Label(
-            general_frame, bg="lightblue", 
+            general_frame, bg="lightblue",
             text="Select the dtype of Dice to Roll:")
         dice_type_label.pack()
         dice_type_menu=tk.OptionMenu(
-            general_frame, 
+            general_frame,
             dice_type, "d4", "d6", "d8", "d10", "d12", "d20"
         )
         dice_type_menu.config(bg="lightblue")
@@ -82,22 +150,39 @@ class DiceRollerApp(tk.Tk):
         # Combobox for skill selection
         self.skill_combobox = tk.ttk.Combobox(
             skill_check_frame, values=list(Skills.ability_map.keys()))
+        # Change advantage/disadvantage based on selection
+        self.skill_combobox.bind(
+            "<<ComboboxSelected>>", lambda event: self.update_advantage_disadvantage("skill", event))
         self.skill_combobox.pack()
         skill_check_frame.pack()
         
         #Saving Throw Frame
         saving_throw_frame=tk.Frame(self, bg="lightblue")
         saving_throw_label=tk.Label(
-            saving_throw_frame, bg="lightblue", 
+            saving_throw_frame, bg="lightblue",
             text="Which Saving Throw to Roll?")
         saving_throw_label.pack()
         # Combobox for saving throw selection
         self.saving_throw_combobox = tk.ttk.Combobox(
             saving_throw_frame, values=list(SavingThrows.ability_map.keys()))
+        self.saving_throw_combobox.bind(
+            "<<ComboboxSelected>>", lambda event: self.update_advantage_disadvantage("save", event))
         self.saving_throw_combobox.pack()
         self.frames[4]=saving_throw_frame
         saving_throw_frame.pack()
         
+        # Frame with radio buttons for advantage, disadvantage or normal
+        # should appear just above the bottom frame
+        advantage_disadvantage_frame = tk.Frame(self, bg="lightblue")
+        self.frames[5] = advantage_disadvantage_frame
+        separator = tk.Frame(
+            advantage_disadvantage_frame, height=2, bd=1, relief=tk.SUNKEN, bg="lightblue")
+        separator.pack(fill=tk.X, padx=5, pady=5)
+        tk.Radiobutton(advantage_disadvantage_frame, text="Normal", variable=self.advantage_var, value=0, bg="lightblue").pack(side=tk.LEFT)
+        tk.Radiobutton(advantage_disadvantage_frame, text="Advantage", variable=self.advantage_var, value=1, bg="lightblue").pack(side=tk.LEFT)
+        tk.Radiobutton(advantage_disadvantage_frame, text="Disadvantage", variable=self.advantage_var, value=2, bg="lightblue").pack(side=tk.LEFT)
+        advantage_disadvantage_frame.pack()
+
         # Bottom Roll Frame
         bottom_frame=tk.Frame(self, bg="lightblue")
         self.frames[1]=bottom_frame
@@ -121,21 +206,55 @@ class DiceRollerApp(tk.Tk):
         if frame==3:
             self.frames[2].pack_forget()
             self.frames[4].pack_forget()
-            self.frames[3].pack(before=self.frames[1])
+            self.frames[3].pack(before=self.frames[5])
         elif frame==4:
             self.frames[2].pack_forget()
             self.frames[3].pack_forget()
-            self.frames[4].pack(before=self.frames[1])
+            self.frames[4].pack(before=self.frames[5])
         else:
             self.frames[3].pack_forget()
             self.frames[4].pack_forget()
-            self.frames[2].pack(before=self.frames[1])
+            self.frames[2].pack(before=self.frames[5])
 
     def reset_values(self):
         """Set default values for all inputs."""
         pass
 
+    def update_advantage_disadvantage(self, check_type="skill", event=None):
+        if check_type == "skill":
+            selected = self.skill_combobox.get()
+            if self.player_character.skills.has_advantage(selected):
+                self.advantage_var.set(1)
+            elif self.player_character.skills.has_disadvantage(selected):
+                self.advantage_var.set(2)
+            else:
+                self.advantage_var.set(0)
+        elif check_type == "save":
+            selected = self.saving_throw_combobox.get()
+            if self.player_character.saving_throws.has_advantage(selected):
+                self.advantage_var.set(1)
+            elif self.player_character.saving_throws.has_disadvantage(selected):
+                self.advantage_var.set(2)
+            else:
+                self.advantage_var.set(0)
+
     def roll_dice(self):
+        """
+        Handles dice rolling logic based on the currently selected frame.
+
+        - For frame 2 (General Dice Roll): 
+            Retrieves the selected dice type, number of dice, and modifier from the UI,
+            performs the dice rolls, applies the modifier, and updates the result label
+            with the individual rolls and the total.
+
+        - For frame 3 (Skill Check): 
+            Calls the _roll_check method for a skill check using the selected skill.
+
+        - For frame 4 (Saving Throw): 
+            Calls the _roll_check method for a saving throw using the selected saving throw.
+
+        Assumes the presence of UI elements such as frames, spinboxes, option menus, and result label.
+        """
         frame = self.frame_variable.get()
         if frame == 2:  # General Dice Roll
             dice_type = self.frames[2].children['!optionmenu'].cget('text')
@@ -156,62 +275,23 @@ class DiceRollerApp(tk.Tk):
             else:
                 self.result_label.config(text=f"Rolls: {rolls}, Total: {result}")
         if frame == 3:  # Skill Check
-            selected_skill = self.skill_combobox.get()
-            if self.player_character.skills.has_advantage(selected_skill):
-                rolls = (random.randint(1, 20), random.randint(1, 20))
-                roll = max(rolls)
-            elif self.player_character.skills.has_disadvantage(selected_skill):
-                rolls = (random.randint(1, 20), random.randint(1, 20))
-                roll = min(rolls)
-            else:
-                roll = random.randint(1, 20)
-                rolls = (roll,)
-            if selected_skill and self.player_character:
-                modifier = self.player_character.get_check_modifier(
-                    selected_skill, check_type="skill")
-                total = roll + modifier
-                if modifier < 0:
-                    self.result_label.config(
-                        text=f"{selected_skill}: {roll} - {abs(modifier)} = {total}")
-                else:
-                    self.result_label.config(
-                        text=f"{selected_skill}: {roll} + {modifier} = {total}")
+            self._roll_check("skill", self.skill_combobox)
         if frame == 4:  # Saving Throw
-            selected_saving_throw = self.saving_throw_combobox.get()
-            if self.player_character.saving_throws.has_advantage(selected_saving_throw):
-                rolls = (random.randint(1, 20), random.randint(1, 20))
-                roll = max(rolls)
-            elif self.player_character.saving_throws.has_disadvantage(selected_saving_throw):
-                rolls = (random.randint(1, 20), random.randint(1, 20))
-                roll = min(rolls)
-            else:
-                roll = random.randint(1, 20)
-                rolls = (roll,)
-            if selected_saving_throw and self.player_character:
-                modifier = self.player_character.get_check_modifier(
-                    selected_saving_throw, check_type="save")
-                total = roll + modifier
-                if modifier < 0:
-                    self.result_label.config(
-                        text=f"{selected_saving_throw}: {roll} - {abs(modifier)} = {total}")
-                else:
-                    self.result_label.config(
-                        text=f"{selected_saving_throw}: {roll} + {modifier} = {total}")
+            self._roll_check("save", self.saving_throw_combobox)
 
 if __name__ == "__main__":
-    John = character.Character(name="John", proficiency_bonus=4)
-    John.set_save_proficiencies(["Strength", "Constitution"])
-    John.set_skill_proficiencies(
+    Warryn = character.Character(name="Warryn", proficiency_bonus=4)
+    Warryn.set_save_proficiencies(["Strength", "Constitution"])
+    Warryn.set_skill_proficiencies(
         ["Animal Handling", "Athletics", "Intimidation", "Perception", "Survival"])
-    John.set_skill_advantages(["Deception","Sleight of Hand"])
-    John.set_skill_disadvantages(["Stealth"])
-    John.set_save_advantages(["Intelligence","Wisdom","Charisma"])
-    John.set_ability_score("Strength", 19)
-    John.set_ability_score("Dexterity", 14)
-    John.set_ability_score("Constitution", 18)
-    John.set_ability_score("Intelligence", 9)
-    John.set_ability_score("Wisdom", 12)
-    John.set_ability_score("Charisma", 10)
-    app = DiceRollerApp(player_character=John)
+    Warryn.set_skill_advantages(["Deception","Sleight of Hand"])
+    Warryn.set_skill_disadvantages(["Stealth"])
+    Warryn.set_save_advantages(["Intelligence","Wisdom","Charisma"])
+    Warryn.set_ability_score("Strength", 19)
+    Warryn.set_ability_score("Dexterity", 14)
+    Warryn.set_ability_score("Constitution", 18)
+    Warryn.set_ability_score("Intelligence", 9)
+    Warryn.set_ability_score("Wisdom", 12)
+    Warryn.set_ability_score("Charisma", 10)
+    app = DiceRollerApp(player_character=Warryn)
     app.mainloop()
-    
