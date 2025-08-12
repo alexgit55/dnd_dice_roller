@@ -18,10 +18,11 @@ Example:
 
 import tkinter as tk
 from tkinter import ttk
-import random
 
 import character
+from weapons import Weapon
 from skills_saves import SavingThrows, Skills
+from dice import Dice
 
 class DiceRollerApp(tk.Tk):
     """A Tkinter-based GUI application for rolling dice in Dungeons & Dragons 
@@ -72,7 +73,7 @@ class DiceRollerApp(tk.Tk):
         self.title("D&D Dice Roller")
         self.config(bg="lightblue")  # Add this line
         self.frame_variable=tk.IntVar(self)
-        self.frame_variable.set(3)  # Default to Skill Check
+        self.frame_variable.set(3)  # Default to General Dice Roll
         self.advantage_var = tk.IntVar(self)
         self.advantage_var.set(0)  # Default to Normal
         self.frames={}
@@ -103,16 +104,24 @@ class DiceRollerApp(tk.Tk):
                 in a formatted string.
         """
         selected = combobox.get()
-        modifier = self.player_character.get_check_modifier(selected, check_type)
+        modifier = self.player_character.get_check_modifier(
+            selected, check_type)
+        if check_type == "attack":
+            weapon = next((w for w in self.player_character.weapons if w.name == selected), None)
+            if weapon:
+                num_dice = int(weapon.damage.split('d')[0]) if 'd' in weapon.damage else 1
+                die_type = int(weapon.damage.split('d')[1]) if 'd' in weapon.damage else 20
+                rolls = [Dice(die_type).roll() for _ in range(num_dice)]
+                total_damage = sum(rolls) + modifier + weapon.damage_bonus
+                self.attack_damage_label.config(
+                    text=f"{weapon.name} Damage: {total_damage}")
+        rolls = (Dice(20).roll(), Dice(20).roll())
         if self.advantage_var.get() == 1:  # Advantage
-            rolls = (random.randint(1, 20), random.randint(1, 20))
             roll = max(rolls)
         elif self.advantage_var.get() == 2:  # Disadvantage
-            rolls = (random.randint(1, 20), random.randint(1, 20))
             roll = min(rolls)
         else:
-            roll = random.randint(1, 20)
-            rolls = (roll,)
+            roll = rolls[0]
         total = roll + modifier
         if modifier < 0:
             self.result_label.config(
@@ -153,15 +162,19 @@ class DiceRollerApp(tk.Tk):
         dice_roll_type.pack(pady=20)
         tk.Radiobutton(
             top_frame, bg="lightblue",
-            text="General Dice Roll", variable=self.frame_variable, value=2,
+            text="General Dice Roll", variable=self.frame_variable, value=3,
             command=self.show_frame).pack()
         tk.Radiobutton(
             top_frame, bg="lightblue",
-            text="Skill Check", variable=self.frame_variable, value=3,
+            text="Skill Check", variable=self.frame_variable, value=4,
             command=self.show_frame).pack()
         tk.Radiobutton(
             top_frame, bg="lightblue",
-            text="Saving Throw", variable=self.frame_variable, value=4,
+            text="Saving Throw", variable=self.frame_variable, value=5,
+            command=self.show_frame).pack()
+        tk.Radiobutton(
+            top_frame, bg="lightblue",
+            text="Weapon Attack", variable=self.frame_variable, value=6,
             command=self.show_frame).pack()
         top_frame.pack()
         # Create a separator
@@ -170,7 +183,7 @@ class DiceRollerApp(tk.Tk):
         separator.pack(fill=tk.X, padx=5, pady=5)
         #General Frame
         general_frame=tk.Frame(self, bg="lightblue")
-        self.frames[2]=general_frame
+        self.frames[3]=general_frame
         dice_type=tk.StringVar(general_frame)
         dice_type.set("d20")  # Default value
         dice_type_label=tk.Label(
@@ -200,7 +213,7 @@ class DiceRollerApp(tk.Tk):
         
         # Skill Check Frame
         skill_check_frame=tk.Frame(self, bg="lightblue")
-        self.frames[3]=skill_check_frame
+        self.frames[4]=skill_check_frame
         skill_check_label=tk.Label(
             skill_check_frame, bg="lightblue", text="Which Skill check to roll?")
         skill_check_label.pack()
@@ -212,10 +225,11 @@ class DiceRollerApp(tk.Tk):
             "<<ComboboxSelected>>", lambda event: 
                 self.update_advantage_disadvantage("skill", event))
         self.skill_combobox.pack()
-        skill_check_frame.pack()
+        skill_check_frame.pack(fill=tk.X, pady=10)
         
         #Saving Throw Frame
         saving_throw_frame=tk.Frame(self, bg="lightblue")
+        self.frames[5]=saving_throw_frame
         saving_throw_label=tk.Label(
             saving_throw_frame, bg="lightblue",
             text="Which Saving Throw to Roll?")
@@ -227,15 +241,28 @@ class DiceRollerApp(tk.Tk):
             "<<ComboboxSelected>>", lambda event: 
                 self.update_advantage_disadvantage("save", event))
         self.saving_throw_combobox.pack()
-        self.frames[4]=saving_throw_frame
-        saving_throw_frame.pack()
+        saving_throw_frame.pack(fill=tk.X, pady=10)
         
+        # Weapon attack frame
+        weapon_attack_frame = tk.Frame(self, bg="lightblue")
+        self.frames[6] = weapon_attack_frame
+        separator = tk.Frame(
+            weapon_attack_frame, height=2,
+            bd=1, relief=tk.SUNKEN, bg="lightblue")
+        separator.pack(fill=tk.X, padx=5, pady=5)
+        tk.Label(weapon_attack_frame, bg="lightblue", text="Select Weapon:").pack()
+        self.weapon_combobox = tk.ttk.Combobox(
+            weapon_attack_frame, values=[weapon.name for weapon in Warryn.weapons])
+        self.weapon_combobox.pack()
+        weapon_attack_frame.pack(fill=tk.X, pady=10)
+
         # Frame with radio buttons for advantage, disadvantage or normal
         # should appear just above the bottom frame
         advantage_disadvantage_frame = tk.Frame(self, bg="lightblue")
-        self.frames[5] = advantage_disadvantage_frame
+        self.frames[1] = advantage_disadvantage_frame
         separator = tk.Frame(
-            advantage_disadvantage_frame, height=2, bd=1, relief=tk.SUNKEN, bg="lightblue")
+            advantage_disadvantage_frame, height=2, 
+            bd=1, relief=tk.SUNKEN, bg="lightblue")
         separator.pack(fill=tk.X, padx=5, pady=5)
         tk.Radiobutton(
             advantage_disadvantage_frame, text="Normal", 
@@ -253,7 +280,7 @@ class DiceRollerApp(tk.Tk):
 
         # Bottom Roll Frame
         bottom_frame=tk.Frame(self, bg="lightblue")
-        self.frames[1]=bottom_frame
+        self.frames[2]=bottom_frame
         # Create a separator
         separator = tk.Frame(
             bottom_frame, height=2, bd=1, relief=tk.SUNKEN, bg="lightblue")
@@ -267,6 +294,9 @@ class DiceRollerApp(tk.Tk):
         self.result_label=tk.Label(
             bottom_frame, bg="lightblue", text="", font=("Arial", 12))
         self.result_label.pack()
+        self.attack_damage_label = tk.Label(
+            bottom_frame, bg="lightblue", text="", font=("Arial", 12))
+        self.attack_damage_label.pack()
         bottom_frame.pack(fill=tk.X, pady=10)
     
     def show_frame(self):
@@ -285,18 +315,26 @@ class DiceRollerApp(tk.Tk):
             - Otherwise: Shows frame 2, hides frames 3 and 4.
         """
         frame=self.frame_variable.get()
-        if frame==3:
-            self.frames[2].pack_forget()
-            self.frames[4].pack_forget()
-            self.frames[3].pack(before=self.frames[5])
-        elif frame==4:
-            self.frames[2].pack_forget()
+        if frame==4:
             self.frames[3].pack_forget()
-            self.frames[4].pack(before=self.frames[5])
+            self.frames[5].pack_forget()
+            self.frames[6].pack_forget()
+            self.frames[4].pack(before=self.frames[2])
+        elif frame==5:
+            self.frames[3].pack_forget()
+            self.frames[4].pack_forget()
+            self.frames[6].pack_forget()
+            self.frames[5].pack(before=self.frames[2])
+        elif frame==6:
+            self.frames[3].pack_forget()
+            self.frames[4].pack_forget()
+            self.frames[5].pack_forget()
+            self.frames[6].pack(before=self.frames[2])
         else:
-            self.frames[3].pack_forget()
             self.frames[4].pack_forget()
-            self.frames[2].pack(before=self.frames[5])
+            self.frames[5].pack_forget()
+            self.frames[6].pack_forget()
+            self.frames[3].pack(before=self.frames[2])
 
     def reset_values(self):
         """Set default values for all inputs."""
@@ -359,16 +397,22 @@ class DiceRollerApp(tk.Tk):
         menus, and result label.
         """
         frame = self.frame_variable.get()
-        if frame == 2:  # General Dice Roll
+        if frame == 4:  # Skill Check
+            self._roll_check("skill", self.skill_combobox)
+        elif frame == 5:  # Saving Throw
+            self._roll_check("save", self.saving_throw_combobox)
+        elif frame == 6:  # Weapon Attack
+            self._roll_check("attack", self.weapon_combobox)
+        else:  # General Dice Roll
             dice_type = self.frames[2].children['!optionmenu'].cget('text')
             number_of_dice = int(self.frames[2].children['!spinbox'].get())
             dice_modifier = int(self.frames[2].children['!spinbox2'].get())
-            rolls=[]
+            rolls = []
             for _ in range(number_of_dice):
-                dtype=int(dice_type[1:])
-                roll=random.randint(1,dtype)
+                dtype = int(dice_type[1:])
+                roll = Dice(dtype).roll()
                 rolls.append(roll)
-            result=sum(rolls)+dice_modifier
+            result = sum(rolls) + dice_modifier
             if dice_modifier < 0:
                 self.result_label.config(
                     text=f"Rolls: {rolls} - {abs(dice_modifier)}, Total: {result}")
@@ -377,24 +421,23 @@ class DiceRollerApp(tk.Tk):
                     text=f"Rolls: {rolls} + {dice_modifier}, Total: {result}")
             else:
                 self.result_label.config(text=f"Rolls: {rolls}, Total: {result}")
-        if frame == 3:  # Skill Check
-            self._roll_check("skill", self.skill_combobox)
-        if frame == 4:  # Saving Throw
-            self._roll_check("save", self.saving_throw_combobox)
+        
 
 if __name__ == "__main__":
     Warryn = character.Character(name="Warryn", proficiency_bonus=4)
-    Warryn.set_save_proficiencies(["Strength", "Constitution"])
-    Warryn.set_skill_proficiencies(
-        ["Animal Handling", "Athletics", "Intimidation", "Perception", "Survival"])
-    Warryn.set_skill_advantages(["Deception","Sleight of Hand"])
-    Warryn.set_skill_disadvantages(["Stealth"])
-    Warryn.set_save_advantages(["Intelligence","Wisdom","Charisma"])
+    Warryn.saving_throws.set_proficiencies(["Strength", "Constitution"])
+    Warryn.skills.set_proficiencies([
+        "Animal Handling", "Athletics", "Intimidation", "Perception", "Survival"])
+    Warryn.skills.set_advantages(["Deception","Sleight of Hand"])
+    Warryn.skills.set_disadvantages(["Stealth"])
+    Warryn.saving_throws.set_advantages(["Intelligence","Wisdom","Charisma"])
     Warryn.set_ability_score("Strength", 19)
     Warryn.set_ability_score("Dexterity", 14)
     Warryn.set_ability_score("Constitution", 18)
     Warryn.set_ability_score("Intelligence", 9)
     Warryn.set_ability_score("Wisdom", 12)
     Warryn.set_ability_score("Charisma", 10)
+    Warryn.add_weapon(Weapon("Glaive", "martial", "slashing", "1d10"))
+    Warryn.add_weapon(Weapon("Maul", "martial", "bludgeoning", "2d6"))
     app = DiceRollerApp(player_character=Warryn)
     app.mainloop()

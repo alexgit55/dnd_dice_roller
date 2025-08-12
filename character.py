@@ -11,6 +11,7 @@ class Character:
         self.proficiency_bonus = proficiency_bonus
         self.skills = Skills()
         self.saving_throws = SavingThrows()
+        self.weapons = []
 
     def set_ability_score(self, ability, score):
         """Set an ability score for the character."""
@@ -24,47 +25,38 @@ class Character:
         """Calculate the modifier for an ability score."""
         score = self.get_ability_score(ability)
         return (score - 10) // 2
-        
-    def set_save_proficiencies(self, proficiencies):
-        """Set save proficiencies for the character."""
-        self.saving_throws.set_proficiencies(proficiencies)
+    
+    def add_weapon(self, weapon):
+        self.weapons.append(weapon)
 
-    def set_skill_proficiencies(self, proficiencies):
-        """Set skill proficiencies for the character."""
-        self.skills.set_proficiencies(proficiencies)
-        
-    def set_skill_advantages(self, advantages):
-        """Set skill advantages for the character."""
-        self.skills.set_advantages(advantages)
-
-    def set_skill_disadvantages(self, disadvantages):
-        """Set skill disadvantages for the character."""
-        self.skills.set_disadvantages(disadvantages)
-        
-    def set_save_advantages(self, advantages):
-        """Set save advantages for the character."""
-        self.saving_throws.set_advantages(advantages)
-        
-    def set_save_disadvantages(self, disadvantages):
-        """Set save disadvantages for the character."""
-        self.saving_throws.set_disadvantages(disadvantages)
-
-    def get_check_modifier(self, check, check_type="skill"):
+    def get_check_modifier(self, check, check_type="skill", weapon=None):
         """
         Get the modifier for a skill or saving throw.
         check: Name of the skill or saving throw.
         check_type: "skill" or "save".
         """
+        ability = None
+        is_proficient = False
+        modifier = 0
+
         if check_type == "skill":
             ability = self.skills.ability_map.get(check)
             is_proficient = self.skills.is_proficient(check)
         elif check_type == "save":
             ability = self.saving_throws.ability_map.get(check)
             is_proficient = self.saving_throws.is_proficient(check)
-        else:
-            raise ValueError("check_type must be 'skill' or 'save'")
+        elif check_type == "attack":
+            # For weapon attacks, we assume proficiency is always true
+            # Get the weapon that matches the name of the check variable
+            weapon = next((w for w in self.weapons if w.name == check), None)
+            if weapon:
+                ability = weapon.ability
+            is_proficient = True
 
-        modifier = self.calculate_ability_modifier(ability)
+        if ability is not None:
+            modifier = self.calculate_ability_modifier(ability)
+        else:
+            modifier = 0
 
         if is_proficient:
             modifier += self.proficiency_bonus
@@ -72,19 +64,20 @@ class Character:
         return modifier
 
 
-John = Character(name="John", proficiency_bonus=5)
-John.set_save_proficiencies(["Strength", "Constitution"])
-John.set_skill_proficiencies(
-    ["Animal Handling", "Athletics", "Intimidation", "Perception", "Survival"])
-John.set_ability_score("Strength", 20)
-John.set_ability_score("Dexterity", 14)
-John.set_ability_score("Constitution", 15)
-John.set_ability_score("Intelligence", 12)
-John.set_ability_score("Wisdom", 13)
-John.set_ability_score("Charisma", 10)
 
 # Example usage
 if __name__ == "__main__":
+    John = Character(name="John", proficiency_bonus=5)
+    John.saving_throws.set_proficiencies(["Strength", "Constitution"])
+    John.skills.set_proficiencies([
+        "Animal Handling", "Athletics", "Intimidation", "Perception", "Survival"])
+    John.set_ability_score("Strength", 20)
+    John.set_ability_score("Dexterity", 14)
+    John.set_ability_score("Constitution", 15)
+    John.set_ability_score("Intelligence", 12)
+    John.set_ability_score("Wisdom", 13)
+    John.set_ability_score("Charisma", 10)
+
     print(f"Character Name: {John.name}")
     print(f"Strength Modifier: {John.calculate_ability_modifier('Strength')}")
     print(f"Proficiency Bonus: {John.proficiency_bonus}")
