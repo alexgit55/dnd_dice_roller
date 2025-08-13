@@ -49,7 +49,7 @@ class DiceRollerApp(tk.Tk):
         __init__(self, player_character):
             Initializes the application window, sets up variables, and builds 
             the UI.
-        _roll_check(self, check_type, combobox):
+        d20_check(self, check_type, combobox):
             Performs a skill check or saving throw roll, applying 
             advantage/disadvantage and modifiers, and updates the result label.
         create_widgets(self):
@@ -83,7 +83,95 @@ class DiceRollerApp(tk.Tk):
         self.player_character = player_character
         self.dice = DiceRoller()
 
-    def _roll_check(self, check_type, combobox):
+    def clear_labels(self):
+        self.advantage_label.config(text="")
+        self.crit_label.config(text="")
+        self.result_label.config(text="")
+        self.attack_damage_label.config(text="")
+
+    # Helper for updating advantage label
+    def update_advantage_label(self, advantage, rolls):
+        if advantage == 1:
+            self.advantage_label.config(text=f"Advantage Roll: {rolls[0][0]} vs {rolls[0][1]} = {rolls[1]}")
+        elif advantage == 2:
+            self.advantage_label.config(text=f"Disadvantage Roll: {rolls[0][0]} vs {rolls[0][1]} = {rolls[1]}")
+        else:
+            self.advantage_label.config(text="")
+
+    def update_crit_label(self, dice_roll):
+        self.crit_label.config(text=f"{Messages.result_message(dice_roll)}")
+
+    def update_result_label(self, combobox, dice_roll, modifier):      
+        total = dice_roll + modifier
+        if modifier < 0:
+            self.result_label.config(
+                text=f"{combobox}: {dice_roll} - {abs(modifier)} = {total}")
+        else:
+            self.result_label.config(
+                text=f"{combobox}: {dice_roll} + {modifier} = {total}")
+
+    def update_attack_damage_label(
+        self,
+        weapon_name,
+        damage_rolls,
+        damage_bonuses,
+        total_damage
+    ):
+        self.attack_damage_label.config(
+                text=f"{weapon_name} Damage: {damage_rolls} + {damage_bonuses} = {total_damage}")
+    
+    
+    def roll_d20_with_advantage(self, advantage):
+        rolls = self.dice.d20_roll(advantage=advantage)
+        return rolls
+    
+    def general_roll(self):
+        dice_type = int(self.frames[3].children['!optionmenu'].cget('text')[1:])
+        number_of_dice = int(self.frames[3].children['!spinbox'].get())
+        dice_modifier = int(self.frames[3].children['!spinbox2'].get())
+        self.dice.clear_dice()
+        if dice_type == 20 and number_of_dice == 1:
+            advantage = self.advantage_var.get()
+            rolls = self.roll_d20_with_advantage(advantage)
+            self.update_advantage_label(advantage, rolls)
+            roll=rolls[1]
+            self.update_crit_label(roll)
+            self.update_result_label("General Roll", roll, dice_modifier)
+        else:
+            for _ in range(number_of_dice):
+                die = Dice(dice_type)
+                self.dice.add_dice(die)
+            total = self.dice.total_roll()
+            self.update_result_label("General Roll", total, dice_modifier)
+
+    def calculate_attack_damage(self, weapon_name, dice_roll, dice_modifier):
+        attack_min=1
+        weapon_modifier = dice_modifier - self.player_character.proficiency_bonus
+        weapon = next((w for w in self.player_character.weapons if w.name == weapon_name), None)
+        if weapon:
+            if weapon.weight_type == "Heavy":
+                attack_min=3
+                self.player_character.damage_bonus = 4
+            else:
+                self.player_character.damage_bonus = 0
+            num_dice = int(weapon.damage.split('d')[0])
+            die_type = int(weapon.damage.split('d')[1])
+            if dice_roll==20:
+                num_dice *= 2
+            self.dice.clear_dice()
+            for _ in range(num_dice):
+                self.dice.add_dice(Dice(die_type, min_roll=attack_min))
+            damage_rolls = self.dice.roll_all()
+            damage_bonuses=weapon_modifier+self.player_character.damage_bonus
+            total_damage = sum(damage_rolls) + damage_bonuses
+            self.update_attack_damage_label(
+                weapon.name,
+                damage_rolls,
+                damage_bonuses,
+                total_damage
+            )
+    
+    def d20_check(self, check_type, combobox):
         """
         Rolls a d20 check for the selected ability or skill, applying advantage 
         or disadvantage if specified,and updates the result label with the roll 
@@ -109,42 +197,19 @@ class DiceRollerApp(tk.Tk):
         modifier = self.player_character.get_check_modifier(
             selected, check_type)
         advantage = self.advantage_var.get()
-        rolls = self.dice.d20_roll(advantage=advantage)
-        if advantage == 1:  # Advantage
-            self.advantage_label.config(text=f"Advantage Roll: {rolls[0][0]} vs {rolls[0][1]} = {rolls[1]}")
-        elif advantage == 2:  # Disadvantage
-            self.advantage_label.config(text=f"Disadvantage Roll: {rolls[0][0]} vs {rolls[0][1]} = {rolls[1]}")
-        else:
-            self.advantage_label.config(text="")
+        rolls = self.roll_d20_with_advantage(advantage)
+        self.update_advantage_label(advantage, rolls)
 
         roll=rolls[1]
-        self.crit_label.config(text=f"{Messages.result_message(roll)}")
-        total = roll + modifier
-        if modifier < 0:
-            self.result_label.config(
-                text=f"{selected}: {roll} - {abs(modifier)} = {total}")
-        else:
-            self.result_label.config(
-                text=f"{selected}: {roll} + {modifier} = {total}")
+        self.update_crit_label(roll)
+        self.update_result_label(selected, roll, modifier)
             
         if check_type == "attack":
-            attack_min=1
-            weapon_modifier = modifier - self.player_character.proficiency_bonus
-            weapon = next((w for w in self.player_character.weapons if w.name == selected), None)
-            if weapon:
-                if weapon.weight_type == "Heavy":
-                    attack_min=3
-                num_dice = int(weapon.damage.split('d')[0])
-                die_type = int(weapon.damage.split('d')[1])
-                if roll==20:
-                    num_dice *= 2
-                self.dice.clear_dice()
-                for _ in range(num_dice):
-                    self.dice.add_dice(Dice(die_type, min_roll=attack_min))
-                damage_rolls = self.dice.roll_all()
-                total_damage = sum(damage_rolls) + weapon_modifier + weapon.damage_bonus
-                self.attack_damage_label.config(
-                    text=f"{weapon.name} Damage: {damage_rolls} + {weapon_modifier} + {weapon.damage_bonus} = {total_damage}")
+            self.calculate_attack_damage(
+                selected,
+                roll,
+                modifier
+            )
 
     def create_widgets(self):
         """
@@ -408,44 +473,26 @@ class DiceRollerApp(tk.Tk):
             the result label with the individual rolls and the total.
 
         - For frame 3 (Skill Check): 
-            Calls the _roll_check method for a skill check using the selected 
+            Calls the d20_check method for a skill check using the selected 
             skill.
 
         - For frame 4 (Saving Throw): 
-            Calls the _roll_check method for a saving throw using the selected 
+            Calls the d20_check method for a saving throw using the selected 
             saving throw.
 
         Assumes the presence of UI elements such as frames, spinboxes, option 
         menus, and result label.
         """
+        self.clear_labels()  # Clear all labels before rolling
         frame = self.frame_variable.get()
-        self.advantage_label.config(text="")  # Clear advantage label
-        self.result_label.config(text="")  # Clear result label
-        self.attack_damage_label.config(text="")  # Clear attack/damage label
         if frame == 4:  # Skill Check
-            self._roll_check("skill", self.skill_combobox)
+            self.d20_check("skill", self.skill_combobox)
         elif frame == 5:  # Saving Throw
-            self._roll_check("save", self.saving_throw_combobox)
+            self.d20_check("save", self.saving_throw_combobox)
         elif frame == 6:  # Weapon Attack
-            self._roll_check("attack", self.weapon_combobox)
+            self.d20_check("attack", self.weapon_combobox)
         else:  # General Dice Roll
-            dice_type = self.frames[2].children['!optionmenu'].cget('text')
-            number_of_dice = int(self.frames[2].children['!spinbox'].get())
-            dice_modifier = int(self.frames[2].children['!spinbox2'].get())
-            rolls = []
-            for _ in range(number_of_dice):
-                dtype = int(dice_type[1:])
-                roll = Dice(dtype).roll()
-                rolls.append(roll)
-            result = sum(rolls) + dice_modifier
-            if dice_modifier < 0:
-                self.result_label.config(
-                    text=f"Rolls: {rolls} - {abs(dice_modifier)}, Total: {result}")
-            elif dice_modifier > 0:
-                self.result_label.config(
-                    text=f"Rolls: {rolls} + {dice_modifier}, Total: {result}")
-            else:
-                self.result_label.config(text=f"Rolls: {rolls}, Total: {result}")
+            self.general_roll()
         
 
 if __name__ == "__main__":

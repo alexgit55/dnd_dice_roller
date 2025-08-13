@@ -54,6 +54,9 @@ class DiceRoller:
                 self.remove_dice()
                 return (rolls, rolls[0])
 
+    def total_roll(self):
+        return sum(self.roll_all())
+
 # Example usage
 if __name__ == "__main__":
     check = DiceRoller()

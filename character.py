@@ -9,6 +9,8 @@ class Character:
         self.name = name
         self.ability_scores = ability_scores if ability_scores else {}
         self.proficiency_bonus = proficiency_bonus
+        self.damage_bonus = 0
+        self.save_bonus = 0
         self.skills = Skills()
         self.saving_throws = SavingThrows()
         self.weapons = []
