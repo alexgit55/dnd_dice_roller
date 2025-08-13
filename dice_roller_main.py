@@ -22,7 +22,8 @@ from tkinter import ttk
 import character
 from weapons import Weapon
 from skills_saves import SavingThrows, Skills
-from dice import Dice
+from dice import Dice, DiceRoller
+from messages import Messages
 
 class DiceRollerApp(tk.Tk):
     """A Tkinter-based GUI application for rolling dice in Dungeons & Dragons 
@@ -80,6 +81,7 @@ class DiceRollerApp(tk.Tk):
         self.create_widgets()
         self.show_frame() # Display the initial frame
         self.player_character = player_character
+        self.dice = DiceRoller()
 
     def _roll_check(self, check_type, combobox):
         """
@@ -106,17 +108,25 @@ class DiceRollerApp(tk.Tk):
         selected = combobox.get()
         modifier = self.player_character.get_check_modifier(
             selected, check_type)
-        rolls = (Dice(20).roll(), Dice(20).roll())
-        if self.advantage_var.get() == 1:  # Advantage
-            roll = max(rolls)
-            self.advantage_label.config(text=f"Advantage: {rolls[0]} vs {rolls[1]} = {roll}")
-        elif self.advantage_var.get() == 2:  # Disadvantage
-            roll = min(rolls)
-            self.advantage_label.config(text=f"Disadvantage: {rolls[0]} vs {rolls[1]} = {roll}")
+        advantage = self.advantage_var.get()
+        rolls = self.dice.d20_roll(advantage=advantage)
+        if advantage == 1:  # Advantage
+            self.advantage_label.config(text=f"Advantage Roll: {rolls[0][0]} vs {rolls[0][1]} = {rolls[1]}")
+        elif advantage == 2:  # Disadvantage
+            self.advantage_label.config(text=f"Disadvantage Roll: {rolls[0][0]} vs {rolls[0][1]} = {rolls[1]}")
         else:
-            roll = rolls[0]
             self.advantage_label.config(text="")
 
+        roll=rolls[1]
+        self.crit_label.config(text=f"{Messages.result_message(roll)}")
+        total = roll + modifier
+        if modifier < 0:
+            self.result_label.config(
+                text=f"{selected}: {roll} - {abs(modifier)} = {total}")
+        else:
+            self.result_label.config(
+                text=f"{selected}: {roll} + {modifier} = {total}")
+            
         if check_type == "attack":
             attack_min=1
             weapon_modifier = modifier - self.player_character.proficiency_bonus
@@ -128,19 +138,14 @@ class DiceRollerApp(tk.Tk):
                 die_type = int(weapon.damage.split('d')[1])
                 if roll==20:
                     num_dice *= 2
-                damage_rolls = [Dice(die_type).roll(attack_min) for _ in range(num_dice)]
+                self.dice.clear_dice()
+                for _ in range(num_dice):
+                    self.dice.add_dice(Dice(die_type, min_roll=attack_min))
+                damage_rolls = self.dice.roll_all()
                 total_damage = sum(damage_rolls) + weapon_modifier + weapon.damage_bonus
                 self.attack_damage_label.config(
                     text=f"{weapon.name} Damage: {damage_rolls} + {weapon_modifier} + {weapon.damage_bonus} = {total_damage}")
 
-        total = roll + modifier
-        if modifier < 0:
-            self.result_label.config(
-                text=f"{selected}: {roll} - {abs(modifier)} = {total}")
-        else:
-            self.result_label.config(
-                text=f"{selected}: {roll} + {modifier} = {total}")
-    
     def create_widgets(self):
         """
         Creates and arranges all the widgets for the dice roller application's 
@@ -308,6 +313,9 @@ class DiceRollerApp(tk.Tk):
         self.result_label=tk.Label(
             bottom_frame, bg="lightblue", text="", font=("Arial", 12))
         self.result_label.pack()
+        self.crit_label = tk.Label(
+            bottom_frame, bg="lightblue", text="", font=("Arial", 12))
+        self.crit_label.pack()
         self.attack_damage_label = tk.Label(
             bottom_frame, bg="lightblue", text="", font=("Arial", 12))
         self.attack_damage_label.pack()

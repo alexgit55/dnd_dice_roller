@@ -17,11 +17,12 @@ Example:
 import random
 
 class Dice:
-    def __init__(self, sides):
+    def __init__(self,sides, min_roll=1):
         self.sides = sides
+        self.min_roll = min_roll
 
-    def roll(self, min_roll=1):
-        return random.randint(min_roll, self.sides)
+    def roll(self):
+        return random.randint(self.min_roll, self.sides)
 
 class DiceRoller:
     def __init__(self):
@@ -29,24 +30,34 @@ class DiceRoller:
 
     def add_dice(self, die):
         self.dice.append(die)
+        
+    def remove_dice(self):
+        self.dice.pop()
 
     def roll_all(self):
         return [die.roll() for die in self.dice]
 
-def roll_dice(die_string):
-    try:
-        num_dice, die_type = die_string.split("d")
-        num_dice = int(num_dice)
-        die_type = int(die_type)
-    except ValueError:
-        raise ValueError("Invalid die string format. Use 'NdM' format.")
+    def clear_dice(self):
+        self.dice.clear()
 
-    roller = DiceRoller()
-    for _ in range(num_dice):
-        roller.add_dice(Dice(die_type))
-    return roller.roll_all()
+    def d20_roll(self, advantage=0):
+        self.clear_dice()
+        self.add_dice(Dice(20))
+        self.add_dice(Dice(20))
+        rolls = self.roll_all()
+        match advantage:
+            case 1:
+                return (rolls, max(rolls))
+            case 2:
+                return (rolls, min(rolls))
+            case _:
+                self.remove_dice()
+                return (rolls, rolls[0])
 
 # Example usage
 if __name__ == "__main__":
-    result = roll_dice("4d6")
+    check = DiceRoller()
+    check.add_dice(Dice(6))
+    check.add_dice(Dice(6))
+    result = check.d20_roll(advantage=2)
     print(result)
