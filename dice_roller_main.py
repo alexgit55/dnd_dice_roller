@@ -106,22 +106,33 @@ class DiceRollerApp(tk.Tk):
         selected = combobox.get()
         modifier = self.player_character.get_check_modifier(
             selected, check_type)
-        if check_type == "attack":
-            weapon = next((w for w in self.player_character.weapons if w.name == selected), None)
-            if weapon:
-                num_dice = int(weapon.damage.split('d')[0]) if 'd' in weapon.damage else 1
-                die_type = int(weapon.damage.split('d')[1]) if 'd' in weapon.damage else 20
-                rolls = [Dice(die_type).roll() for _ in range(num_dice)]
-                total_damage = sum(rolls) + modifier + weapon.damage_bonus
-                self.attack_damage_label.config(
-                    text=f"{weapon.name} Damage: {total_damage}")
         rolls = (Dice(20).roll(), Dice(20).roll())
         if self.advantage_var.get() == 1:  # Advantage
             roll = max(rolls)
+            self.advantage_label.config(text=f"Advantage: {rolls[0]} vs {rolls[1]} = {roll}")
         elif self.advantage_var.get() == 2:  # Disadvantage
             roll = min(rolls)
+            self.advantage_label.config(text=f"Disadvantage: {rolls[0]} vs {rolls[1]} = {roll}")
         else:
             roll = rolls[0]
+            self.advantage_label.config(text="")
+
+        if check_type == "attack":
+            attack_min=1
+            weapon_modifier = modifier - self.player_character.proficiency_bonus
+            weapon = next((w for w in self.player_character.weapons if w.name == selected), None)
+            if weapon:
+                if weapon.weight_type == "Heavy":
+                    attack_min=3
+                num_dice = int(weapon.damage.split('d')[0])
+                die_type = int(weapon.damage.split('d')[1])
+                if roll==20:
+                    num_dice *= 2
+                damage_rolls = [Dice(die_type).roll(attack_min) for _ in range(num_dice)]
+                total_damage = sum(damage_rolls) + weapon_modifier + weapon.damage_bonus
+                self.attack_damage_label.config(
+                    text=f"{weapon.name} Damage: {damage_rolls} + {weapon_modifier} + {weapon.damage_bonus} = {total_damage}")
+
         total = roll + modifier
         if modifier < 0:
             self.result_label.config(
@@ -291,6 +302,9 @@ class DiceRollerApp(tk.Tk):
         reset_button=tk.Button(
             bottom_frame, text="Reset", command=self.reset_values)
         reset_button.pack(pady=5)
+        self.advantage_label = tk.Label(
+            bottom_frame, bg="lightblue", text="", font=("Arial", 12))
+        self.advantage_label.pack()
         self.result_label=tk.Label(
             bottom_frame, bg="lightblue", text="", font=("Arial", 12))
         self.result_label.pack()
@@ -397,6 +411,9 @@ class DiceRollerApp(tk.Tk):
         menus, and result label.
         """
         frame = self.frame_variable.get()
+        self.advantage_label.config(text="")  # Clear advantage label
+        self.result_label.config(text="")  # Clear result label
+        self.attack_damage_label.config(text="")  # Clear attack/damage label
         if frame == 4:  # Skill Check
             self._roll_check("skill", self.skill_combobox)
         elif frame == 5:  # Saving Throw
@@ -437,7 +454,7 @@ if __name__ == "__main__":
     Warryn.set_ability_score("Intelligence", 9)
     Warryn.set_ability_score("Wisdom", 12)
     Warryn.set_ability_score("Charisma", 10)
-    Warryn.add_weapon(Weapon("Glaive", "martial", "slashing", "1d10"))
-    Warryn.add_weapon(Weapon("Maul", "martial", "bludgeoning", "2d6"))
+    Warryn.add_weapon(Weapon("Glaive", "martial", "slashing", "1d10", weight_type="Heavy"))
+    Warryn.add_weapon(Weapon("Maul", "martial", "bludgeoning", "2d6", weight_type="Heavy"))
     app = DiceRollerApp(player_character=Warryn)
     app.mainloop()

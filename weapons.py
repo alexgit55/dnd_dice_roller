@@ -8,13 +8,14 @@ Example:
 """
 
 class Weapon:
-    def __init__(self, name, category, damage_type, damage, ability="Strength"):
+    def __init__(self, name, category, damage_type, damage, ability="Strength", weight_type="normal"):
         self.name = name
         self.category = category
         self.damage_type = damage_type
         self.damage = damage
         self.ability = ability
         self.damage_bonus = 0
+        self.weight_type = weight_type
 
     def attack(self):
         print(f"Attacking with {self.name} for {self.damage+self.damage_bonus} {self.damage_type} damage.")

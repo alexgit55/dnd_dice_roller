@@ -27,7 +27,11 @@ class Character:
         return (score - 10) // 2
     
     def add_weapon(self, weapon):
+        if weapon.weight_type == "Heavy":
+            weapon.damage_bonus += self.proficiency_bonus
         self.weapons.append(weapon)
+        
+            
 
     def get_check_modifier(self, check, check_type="skill", weapon=None):
         """
@@ -62,8 +66,6 @@ class Character:
             modifier += self.proficiency_bonus
 
         return modifier
-
-
 
 # Example usage
 if __name__ == "__main__":
