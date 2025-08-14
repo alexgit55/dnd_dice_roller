@@ -17,30 +17,110 @@ Example:
 import random
 
 class Dice:
+    """
+    A class representing a dice with a configurable number of sides and minimum roll value.
+    Attributes:
+        sides (int): The number of sides on the dice.
+        min_roll (int): The minimum value that can be rolled (default is 1).
+    Methods:
+        roll():
+            Rolls the dice and returns a random integer between min_roll and sides (inclusive).
+    """
     def __init__(self,sides, min_roll=1):
         self.sides = sides
         self.min_roll = min_roll
 
     def roll(self):
+        """
+        Rolls the dice and returns a random integer between min_roll and sides (inclusive).
+
+        Returns:
+            int: The result of the dice roll.
+        """
         return random.randint(self.min_roll, self.sides)
 
 class DiceRoller:
+    """
+    DiceRoller is a class for managing and rolling multiple dice.
+    Attributes:
+        dice (list): A list of dice objects currently managed by the roller.
+    Methods:
+        add_dice(die):
+            Adds a die object to the roller.
+        remove_dice():
+            Removes the most recently added die from the roller.
+        roll_all():
+            Rolls all dice currently managed by the roller and returns their results as a list.
+        clear_dice():
+            Removes all dice from the roller.
+        d20_roll(advantage=0):
+            Rolls two 20-sided dice (d20) for advantage/disadvantage mechanics.
+            Args:
+                advantage (int): 1 for advantage (returns highest), 2 for disadvantage (returns lowest), 0 for normal (returns first roll).
+            Returns:
+                tuple: (list of rolls, selected roll based on advantage/disadvantage)
+        total_roll():
+            Rolls all dice and returns both the individual results and their sum.
+            Returns:
+                tuple: (list of rolls, sum of rolls)
+    """
     def __init__(self):
         self.dice = []
 
     def add_dice(self, die):
+        """
+        Adds a die to the dice collection.
+
+        Args:
+            die: An instance representing a single die to be added to the collection.
+
+        Returns:
+            None
+        """
         self.dice.append(die)
-        
+
     def remove_dice(self):
+        """
+        Removes the last dice from the dice list.
+
+        This method removes the most recently added dice from the `self.dice` list.
+        If the list is empty, it will raise an IndexError.
+
+        Raises:
+            IndexError: If there are no dice to remove.
+        """
         self.dice.pop()
 
     def roll_all(self):
+        """
+        Rolls all dice in the collection and returns a list of their results.
+
+        Returns:
+            list: A list containing the result of rolling each die in self.dice.
+        """
         return [die.roll() for die in self.dice]
 
     def clear_dice(self):
+        """
+        Removes all dice from the current collection, resetting it to an empty state.
+        """
         self.dice.clear()
 
     def d20_roll(self, advantage=0):
+        """
+        Rolls two 20-sided dice and returns the results based on advantage or disadvantage.
+
+        Args:
+            advantage (int, optional): Determines the type of roll.
+                - 1: Roll with advantage (returns both rolls and the higher value).
+                - 2: Roll with disadvantage (returns both rolls and the lower value).
+                - Any other value: Normal roll (returns both rolls and the first roll).
+
+        Returns:
+            tuple: A tuple containing:
+                - list: The results of both dice rolls.
+                - int: The selected roll based on advantage/disadvantage/normal.
+        """
         self.clear_dice()
         self.add_dice(Dice(20))
         self.add_dice(Dice(20))
@@ -55,7 +135,15 @@ class DiceRoller:
                 return (rolls, rolls[0])
 
     def total_roll(self):
-        return sum(self.roll_all())
+        """
+        Rolls all dice and returns a tuple containing the list of individual dice rolls and their total sum.
+
+        Returns:
+            tuple: A tuple where the first element is a list of integers representing the result of each die roll,
+                   and the second element is an integer representing the sum of all dice rolls.
+        """
+        dice_rolls=self.roll_all()
+        return (dice_rolls, sum(dice_rolls))
 
 # Example usage
 if __name__ == "__main__":
