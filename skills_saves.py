@@ -28,7 +28,7 @@ class Checks:
         self.proficiencies = []
         self.advantages = []
         self.disadvantages = []
-        
+
     def get_ability_list(self):
         """
         Returns a list of ability names available in the ability map.

@@ -27,14 +27,15 @@ class Messages:
                 return "YES! Critical Success!"
             case _:
                 return f"Roll Result: {result}"
-            
+
     @staticmethod
     def update_roll_button_text(frame_variable):
         """
         Returns a context-specific label for a roll button based on the provided frame variable.
 
         Args:
-            frame_variable (str): The type of roll context. Expected values are "skill", "save", "weapon", or any other string.
+            frame_variable (str): The type of roll context. Expected values are 
+            "skill", "save", "weapon", or any other string.
 
         Returns:
             str: A label string appropriate for the given roll context.
