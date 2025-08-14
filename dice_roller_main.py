@@ -16,8 +16,7 @@ Example:
         # ... set up character ...
 """
 
-import tkinter as tk
-from tkinter import ttk
+import ttkbootstrap as tb
 
 import character
 from weapons import Weapon
@@ -25,7 +24,8 @@ from skills_saves import SavingThrows, Skills
 from dice import Dice, DiceRoller
 from messages import Messages
 
-class DiceRollerApp(tk.Tk):
+
+class DiceRollerApp(tb.Window):
     """A Tkinter-based GUI application for rolling dice in Dungeons & Dragons 
     (D&D) gameplay. The DiceRollerApp provides an interactive interface for 
     players to perform various dice rolls, including general dice rolls, skill 
@@ -89,14 +89,10 @@ class DiceRollerApp(tk.Tk):
     """
 
     def __init__(self, player_character):
-        super().__init__()
+        super().__init__(themename="darkly")
         self.title("D&D Dice Roller")
-        self.config(bg="lightblue")  # Add this line
-        self.frame_variable=tk.IntVar(self)
-        self.frame_variable.set(3)  # Default to General Dice Roll
-        self.advantage_var = tk.IntVar(self)
-        self.advantage_var.set(0)  # Default to Normal
-        self.frames={}
+        self.create_control_variables()
+        self.frames = {}
         self.skill_combobox = None
         self.saving_throw_combobox = None
         self.weapon_combobox = None
@@ -108,6 +104,325 @@ class DiceRollerApp(tk.Tk):
         self.dice = DiceRoller()
         self.create_widgets()
         self.show_frame() # Display the initial frame
+
+    def create_control_variables(self):
+        self.advantage_var = tb.IntVar(self)
+        self.advantage_var.set(0)  # Default to Normal
+        self.frame_variable = tb.StringVar(self)
+        self.frame_variable.set("general")  # Default to General Frame
+        self.dice_type = tb.StringVar(self)
+        self.dice_type.set("d20")
+        self.number_of_dice = tb.IntVar(self)
+        self.number_of_dice.set(1)  # Default to 1
+        self.dice_modifier = tb.IntVar(self)
+        self.dice_modifier.set(0)  # Default to 0
+
+    def create_widgets(self):
+        """
+        Creates and arranges all the widgets for the dice roller application's 
+        main window. Refactored to use helper methods for each frame.
+        """
+        self.create_top_frame()
+        self.create_general_frame()
+        self.create_skill_check_frame()
+        self.create_saving_throw_frame()
+        self.create_weapon_attack_frame()
+        self.create_advantage_disadvantage_frame()
+        self.create_bottom_frame()
+
+    def create_top_frame(self):
+        """
+        Creates the top frame of the application UI, containing radio buttons 
+        for selecting the type of dice roll.
+        
+        The frame includes:
+            - A label prompting the user to select the type of roll.
+            - Four radio buttons for "General Dice Roll", "Skill Check", 
+            "Saving Throw", and "Weapon Attack".
+            - A separator line for visual separation.
+        
+        The selected radio button updates the frame variable and triggers the 
+        display of the corresponding frame.
+        """
+        top_frame = tb.Frame(self)
+        self.frames["top"] = top_frame
+        top_frame.pack(fill=tb.X)
+        dice_roll_type = tb.Label(
+            top_frame,
+            text="Select which type of roll you want to perform: "
+        )
+        dice_roll_type.pack(pady=20)
+        tb.Radiobutton(
+            top_frame,
+            text="General Dice Roll", variable=self.frame_variable, value="general",
+            command=self.show_frame).pack(side=tb.LEFT, padx=5)
+        tb.Radiobutton(
+            top_frame,
+            text="Skill Check", variable=self.frame_variable, value="skill",
+            command=self.show_frame).pack(side=tb.LEFT, padx=5)
+        tb.Radiobutton(
+            top_frame,
+            text="Saving Throw", variable=self.frame_variable, value="save",
+            command=self.show_frame).pack(side=tb.LEFT, padx=5)
+        tb.Radiobutton(
+            top_frame,
+            text="Weapon Attack", variable=self.frame_variable, value="weapon",
+            command=self.show_frame).pack(side=tb.LEFT, padx=5)
+
+
+    def create_general_frame(self):
+        """
+        Creates and configures the general frame for dice rolling options in 
+        the GUI.
+
+        This frame allows the user to:
+            - Select the type of dice to roll (d4, d6, d8, d10, d12, d20).
+            - Specify the number of dice to roll (1 to 20).
+            - Set a modifier to add to the roll (-20 to 20).
+
+        The frame is styled with a light blue background and contains labels 
+        and input widgets for each option. The frame is stored in the 
+        `self.frames` dictionary at index 3.
+
+        Returns:
+            None
+        """
+        general_frame = tb.Frame(self)
+        self.frames["general"] = general_frame
+        dice_type = tb.StringVar(general_frame)
+        dice_type.set("d20")
+        dice_type_label = tb.Label(
+            general_frame,
+            text="Select the type of Dice to Roll:")
+        dice_type_label.pack()
+        dice_type_menu = tb.OptionMenu(
+            general_frame,
+            dice_type, "d4", "d6", "d8", "d10", "d12", "d20", "d100"
+        )
+        dice_type_menu.pack()
+        number_of_dice_label = tb.Label(
+            general_frame, text="How many Dice to Roll?")
+        number_of_dice_label.pack()
+        number_of_dice = tb.Spinbox(
+            general_frame, from_=1, to=20, width=5, 
+            textvariable=self.number_of_dice)
+        number_of_dice.pack()
+        dice_modifier_label = tb.Label(
+            general_frame, text="Modifier to add to the roll?")
+        dice_modifier_label.pack()
+        dice_modifier = tb.Spinbox(
+            general_frame, from_=-20, to=20, width=5,
+            textvariable=self.dice_modifier)
+        dice_modifier.pack()
+        general_frame.pack(fill=tb.X, pady=10)
+
+    def create_skill_check_frame(self):
+        """
+        Creates and configures the skill check frame within the application UI.
+
+        This method initializes a new Tkinter Frame for skill checks, adds a 
+        label prompting the user to select a skill, and sets up a Combobox 
+        populated with available skills from the Skills.ability_map. The 
+        Combobox is bound to an event handler that updates the 
+        advantage/disadvantage state when a skill is selected. The frame is 
+        stored in the frames dictionary and packed into the main window.
+
+        Side Effects:
+            - Modifies self.frames by adding the skill check frame at index 4.
+            - Initializes self.skill_combobox for later use.
+            - Packs the skill check frame into the main window.
+        """
+        skill_check_frame = tb.Frame(self)
+        self.frames["skill"] = skill_check_frame
+        skill_check_label = tb.Label(
+            skill_check_frame, text="Which Skill check to roll?")
+        skill_check_label.pack()
+        self.skill_combobox = tb.Combobox(
+            skill_check_frame, 
+            values=list(Skills.ability_map.keys()), 
+            bootstyle="info"
+        )
+        self.skill_combobox.bind(
+            "<<ComboboxSelected>>", lambda event:
+                self.update_advantage_disadvantage("skill", event))
+        self.skill_combobox.pack()
+        skill_check_frame.pack(fill=tb.X, pady=10)
+
+    def create_saving_throw_frame(self):
+        """
+        Creates and configures the saving throw selection frame in the GUI.
+
+        This method initializes a new frame for saving throw selection, adds a 
+        label prompting the user, and sets up a combobox populated with 
+        available saving throw abilities. It also binds an event handler to the 
+        combobox for updating advantage/disadvantage options when a selection 
+        is made. The frame is then packed into the main window layout.
+
+        Side Effects:
+            - Modifies self.frames by adding the saving throw frame at index 5.
+            - Initializes self.saving_throw_combobox for later use.
+            - Updates the GUI layout with the new frame and widgets.
+        """
+        saving_throw_frame = tb.Frame(self)
+        self.frames["save"] = saving_throw_frame
+        saving_throw_label = tb.Label(
+            saving_throw_frame,
+            text="Which Saving Throw to Roll?")
+        saving_throw_label.pack()
+        self.saving_throw_combobox = tb.Combobox(
+            saving_throw_frame, values=list(SavingThrows.ability_map.keys()))
+        self.saving_throw_combobox.bind(
+            "<<ComboboxSelected>>", lambda event:
+                self.update_advantage_disadvantage("save", event))
+        self.saving_throw_combobox.pack()
+        saving_throw_frame.pack(fill=tb.X, pady=10)
+
+    def create_weapon_attack_frame(self):
+        """
+        Creates and configures the weapon attack frame in the GUI.
+
+        This frame allows the user to select a weapon from a dropdown list 
+        (combobox) populated with the names of weapons available to the player 
+        character. It also adds a visual separator and label for clarity.
+
+        The frame is stored in the `self.frames` dictionary at index 6 and 
+        packed into the main window.
+
+        Returns:
+            None
+        """
+        weapon_attack_frame = tb.Frame(self)
+        self.frames["weapon"] = weapon_attack_frame
+        tb.Label(weapon_attack_frame, text="Select Weapon:").pack()
+        self.weapon_combobox = tb.Combobox(
+           weapon_attack_frame, values=[weapon.name for weapon in self.player_character.weapons])
+        self.weapon_combobox.pack()
+        weapon_attack_frame.pack(fill=tb.X, pady=10)
+
+    def create_advantage_disadvantage_frame(self):
+        """
+        Creates and packs a frame containing radio buttons for selecting dice 
+        roll mode: Normal, Advantage, or Disadvantage. The selected mode is 
+        stored in self.advantage_var. The frame is stored in self.frames["advantage"] and 
+        styled with a light blue background.
+        """
+        advantage_disadvantage_frame = tb.Frame(self)
+        self.frames["advantage"] = advantage_disadvantage_frame
+        tb.Radiobutton(
+            advantage_disadvantage_frame, text="Normal",
+            variable=self.advantage_var, value=0,
+            style="Advantage.TRadiobutton"
+        ).pack(side=tb.LEFT)
+        tb.Radiobutton(
+            advantage_disadvantage_frame, text="Advantage",
+            variable=self.advantage_var, value=1,
+            style="Advantage.TRadiobutton"
+        ).pack(side=tb.LEFT)
+        tb.Radiobutton(
+            advantage_disadvantage_frame, text="Disadvantage",
+            variable=self.advantage_var, value=2,
+            style="Advantage.TRadiobutton"
+        ).pack(side=tb.LEFT)
+        advantage_disadvantage_frame.pack()
+
+    def create_special_ability_frame(self):
+        """
+        Creates and configures the special ability frame in the GUI.
+
+        This frame allows the user to select a special ability from a dropdown list 
+        (combobox) populated with the names of special abilities available to the player 
+        character. It also adds a visual separator and label for clarity.
+
+        The frame is stored in the `self.frames` dictionary at index 7 and 
+        packed into the main window.
+
+        Returns:
+            None
+        """
+        special_ability_frame = tb.Frame(self)
+        self.frames[7] = special_ability_frame
+        tb.Label(special_ability_frame, text="Active Abilities:").pack()
+        self.special_ability_combobox = tb.Combobox(
+            special_ability_frame, values=[ability.name for ability in self.player_character.special_abilities])
+        self.special_ability_combobox.pack()
+        special_ability_frame.pack(fill=tb.X, pady=10)
+
+    def create_bottom_frame(self):
+        """
+        Creates and configures the bottom frame of the application UI.
+
+        This frame includes:
+            - A horizontal separator for visual separation.
+            - A "Roll Dice" button to trigger the dice rolling logic.
+            - A "Reset" button to reset input values and results.
+            - Labels for displaying advantage status, roll result, critical hit 
+              status, and attack damage.
+
+        The frame is styled with a light blue background and appropriate 
+        padding.
+        The created frame is stored in self.frames["bottom"].
+        """
+        bottom_frame = tb.Frame(self)
+        self.frames["bottom"] = bottom_frame
+        roll_button = tb.Button(
+            bottom_frame,
+            text="Roll Dice",
+            command=self.roll_dice,
+        )
+        roll_button.pack(pady=20)
+        reset_button = tb.Button(
+            bottom_frame, text="Reset", command=self.reset_values, style="TButton")
+        reset_button.pack(pady=5)
+        self.advantage_label = tb.Label(
+            bottom_frame, text="")
+        self.advantage_label.pack()
+        self.result_label = tb.Label(
+            bottom_frame, text="")
+        self.result_label.pack()
+        self.crit_label = tb.Label(
+            bottom_frame, text="")
+        self.crit_label.pack()
+        self.attack_damage_label = tb.Label(
+            bottom_frame, text="")
+        self.attack_damage_label.pack()
+        bottom_frame.pack(fill=tb.X, pady=10)
+
+    def show_frame(self):
+        """
+        Displays the appropriate frame in the GUI based on the current value of 
+        `self.frame_variable`.
+
+        This method manages the visibility and order of frames in the 
+        application by packing or forgetting specific frames. It ensures that 
+        only the selected frame (2, 3, or 4) is visible before frame 5, while 
+        hiding the others.
+
+        Behavior:
+            - If `frame_variable` is 3: Shows frame 3, hides frames 2 and 4.
+            - If `frame_variable` is 4: Shows frame 4, hides frames 2 and 3.
+            - Otherwise: Shows frame 2, hides frames 3 and 4.
+        """
+        frame = self.frame_variable.get()
+        if frame == "skill":
+            self.frames["general"].pack_forget()
+            self.frames["save"].pack_forget()
+            self.frames["weapon"].pack_forget()
+            self.frames["skill"].pack(before=self.frames["bottom"])
+        elif frame == "save":
+            self.frames["general"].pack_forget()
+            self.frames["skill"].pack_forget()
+            self.frames["weapon"].pack_forget()
+            self.frames["save"].pack(before=self.frames["bottom"])
+        elif frame == "weapon":
+            self.frames["general"].pack_forget()
+            self.frames["skill"].pack_forget()
+            self.frames["save"].pack_forget()
+            self.frames["weapon"].pack(before=self.frames["bottom"])
+        else:
+            self.frames["skill"].pack_forget()
+            self.frames["save"].pack_forget()
+            self.frames["weapon"].pack_forget()
+            self.frames["general"].pack(before=self.frames["bottom"])
 
     def clear_labels(self):
         """
@@ -236,9 +551,9 @@ class DiceRollerApp(tk.Tk):
         Returns:
             None
         """
-        dice_type = int(self.frames[3].children['!optionmenu'].cget('text')[1:])
-        number_of_dice = int(self.frames[3].children['!spinbox'].get())
-        dice_modifier = int(self.frames[3].children['!spinbox2'].get())
+        dice_type = int(self.frames["general"].children['!optionmenu'].cget('text')[1:])
+        number_of_dice = int(self.frames["general"].children['!spinbox'].get())
+        dice_modifier = int(self.frames["general"].children['!spinbox2'].get())
         self.dice.clear_dice()
         if dice_type == 20 and number_of_dice == 1:
             advantage = self.advantage_var.get()
@@ -333,303 +648,15 @@ class DiceRollerApp(tk.Tk):
                 modifier
             )
 
-    def create_widgets(self):
-        """
-        Creates and arranges all the widgets for the dice roller application's 
-        main window. Refactored to use helper methods for each frame.
-        """
-        self.create_top_frame()
-        self.create_general_frame()
-        self.create_skill_check_frame()
-        self.create_saving_throw_frame()
-        self.create_weapon_attack_frame()
-        self.create_advantage_disadvantage_frame()
-        self.create_bottom_frame()
-
-    def create_top_frame(self):
-        """
-        Creates the top frame of the application UI, containing radio buttons 
-        for selecting the type of dice roll.
-        
-        The frame includes:
-            - A label prompting the user to select the type of roll.
-            - Four radio buttons for "General Dice Roll", "Skill Check", 
-            "Saving Throw", and "Weapon Attack".
-            - A separator line for visual separation.
-        
-        The selected radio button updates the frame variable and triggers the 
-        display of the corresponding frame.
-        """
-        top_frame = tk.Frame(self, bg="lightblue")
-        self.frames[0] = top_frame
-        top_frame.pack(fill=tk.X)
-        dice_roll_type = tk.Label(
-            top_frame, bg="lightblue",
-            text="Select which dtype of roll you want to perform: "
-        )
-        dice_roll_type.pack(pady=20)
-        tk.Radiobutton(
-            top_frame, bg="lightblue",
-            text="General Dice Roll", variable=self.frame_variable, value=3,
-            command=self.show_frame).pack()
-        tk.Radiobutton(
-            top_frame, bg="lightblue",
-            text="Skill Check", variable=self.frame_variable, value=4,
-            command=self.show_frame).pack()
-        tk.Radiobutton(
-            top_frame, bg="lightblue",
-            text="Saving Throw", variable=self.frame_variable, value=5,
-            command=self.show_frame).pack()
-        tk.Radiobutton(
-            top_frame, bg="lightblue",
-            text="Weapon Attack", variable=self.frame_variable, value=6,
-            command=self.show_frame).pack()
-        separator = tk.Frame(
-            top_frame, height=2, bd=1, relief=tk.SUNKEN, bg="lightblue")
-        separator.pack(fill=tk.X, padx=5, pady=5)
-
-    def create_general_frame(self):
-        """
-        Creates and configures the general frame for dice rolling options in 
-        the GUI.
-
-        This frame allows the user to:
-            - Select the type of dice to roll (d4, d6, d8, d10, d12, d20).
-            - Specify the number of dice to roll (1 to 20).
-            - Set a modifier to add to the roll (-20 to 20).
-
-        The frame is styled with a light blue background and contains labels 
-        and input widgets for each option. The frame is stored in the 
-        `self.frames` dictionary at index 3.
-
-        Returns:
-            None
-        """
-        general_frame = tk.Frame(self, bg="lightblue")
-        self.frames[3] = general_frame
-        dice_type = tk.StringVar(general_frame)
-        dice_type.set("d20")
-        dice_type_label = tk.Label(
-            general_frame, bg="lightblue",
-            text="Select the dtype of Dice to Roll:")
-        dice_type_label.pack()
-        dice_type_menu = tk.OptionMenu(
-            general_frame,
-            dice_type, "d4", "d6", "d8", "d10", "d12", "d20"
-        )
-        dice_type_menu.config(bg="lightblue")
-        dice_type_menu.pack()
-        number_of_dice_label = tk.Label(
-            general_frame, bg="lightblue", text="How many Dice to Roll?")
-        number_of_dice_label.pack()
-        number_of_dice = tk.Spinbox(
-            general_frame, bg="lightblue", from_=1, to=20, width=5)
-        number_of_dice.pack()
-        dice_modifier_label = tk.Label(
-            general_frame, bg="lightblue", text="Modifier to add to the roll?")
-        dice_modifier_label.pack()
-        dice_modifier = tk.Spinbox(
-            general_frame, bg="lightblue", from_=-20, to=20, width=5,
-            textvariable=tk.IntVar(general_frame, value=0))
-        dice_modifier.pack()
-        general_frame.pack(fill=tk.X, pady=10)
-
-    def create_skill_check_frame(self):
-        """
-        Creates and configures the skill check frame within the application UI.
-
-        This method initializes a new Tkinter Frame for skill checks, adds a 
-        label prompting the user to select a skill, and sets up a Combobox 
-        populated with available skills from the Skills.ability_map. The 
-        Combobox is bound to an event handler that updates the 
-        advantage/disadvantage state when a skill is selected. The frame is 
-        stored in the frames dictionary and packed into the main window.
-
-        Side Effects:
-            - Modifies self.frames by adding the skill check frame at index 4.
-            - Initializes self.skill_combobox for later use.
-            - Packs the skill check frame into the main window.
-        """
-        skill_check_frame = tk.Frame(self, bg="lightblue")
-        self.frames[4] = skill_check_frame
-        skill_check_label = tk.Label(
-            skill_check_frame, bg="lightblue", text="Which Skill check to roll?")
-        skill_check_label.pack()
-        self.skill_combobox = tk.ttk.Combobox(
-            skill_check_frame, values=list(Skills.ability_map.keys()))
-        self.skill_combobox.bind(
-            "<<ComboboxSelected>>", lambda event:
-                self.update_advantage_disadvantage("skill", event))
-        self.skill_combobox.pack()
-        skill_check_frame.pack(fill=tk.X, pady=10)
-
-    def create_saving_throw_frame(self):
-        """
-        Creates and configures the saving throw selection frame in the GUI.
-
-        This method initializes a new frame for saving throw selection, adds a 
-        label prompting the user, and sets up a combobox populated with 
-        available saving throw abilities. It also binds an event handler to the 
-        combobox for updating advantage/disadvantage options when a selection 
-        is made. The frame is then packed into the main window layout.
-
-        Side Effects:
-            - Modifies self.frames by adding the saving throw frame at index 5.
-            - Initializes self.saving_throw_combobox for later use.
-            - Updates the GUI layout with the new frame and widgets.
-        """
-        saving_throw_frame = tk.Frame(self, bg="lightblue")
-        self.frames[5] = saving_throw_frame
-        saving_throw_label = tk.Label(
-            saving_throw_frame, bg="lightblue",
-            text="Which Saving Throw to Roll?")
-        saving_throw_label.pack()
-        self.saving_throw_combobox = tk.ttk.Combobox(
-            saving_throw_frame, values=list(SavingThrows.ability_map.keys()))
-        self.saving_throw_combobox.bind(
-            "<<ComboboxSelected>>", lambda event:
-                self.update_advantage_disadvantage("save", event))
-        self.saving_throw_combobox.pack()
-        saving_throw_frame.pack(fill=tk.X, pady=10)
-
-    def create_weapon_attack_frame(self):
-        """
-        Creates and configures the weapon attack frame in the GUI.
-
-        This frame allows the user to select a weapon from a dropdown list 
-        (combobox) populated with the names of weapons available to the player 
-        character. It also adds a visual separator and label for clarity.
-
-        The frame is stored in the `self.frames` dictionary at index 6 and 
-        packed into the main window.
-
-        Returns:
-            None
-        """
-        weapon_attack_frame = tk.Frame(self, bg="lightblue")
-        self.frames[6] = weapon_attack_frame
-        separator = tk.Frame(
-            weapon_attack_frame, height=2,
-            bd=1, relief=tk.SUNKEN, bg="lightblue")
-        separator.pack(fill=tk.X, padx=5, pady=5)
-        tk.Label(weapon_attack_frame, bg="lightblue", text="Select Weapon:").pack()
-        self.weapon_combobox = tk.ttk.Combobox(
-           weapon_attack_frame, values=[weapon.name for weapon in self.player_character.weapons])
-        self.weapon_combobox.pack()
-        weapon_attack_frame.pack(fill=tk.X, pady=10)
-
-    def create_advantage_disadvantage_frame(self):
-        """
-        Creates and packs a frame containing radio buttons for selecting dice 
-        roll mode: Normal, Advantage, or Disadvantage. The selected mode is 
-        stored in self.advantage_var. The frame is stored in self.frames[1] and 
-        styled with a light blue background.
-        """
-        advantage_disadvantage_frame = tk.Frame(self, bg="lightblue")
-        self.frames[1] = advantage_disadvantage_frame
-        separator = tk.Frame(
-            advantage_disadvantage_frame, height=2,
-            bd=1, relief=tk.SUNKEN, bg="lightblue")
-        separator.pack(fill=tk.X, padx=5, pady=5)
-        tk.Radiobutton(
-            advantage_disadvantage_frame, text="Normal",
-            variable=self.advantage_var, value=0,
-            bg="lightblue").pack(side=tk.LEFT)
-        tk.Radiobutton(
-            advantage_disadvantage_frame, text="Advantage",
-            variable=self.advantage_var, value=1,
-            bg="lightblue").pack(side=tk.LEFT)
-        tk.Radiobutton(
-            advantage_disadvantage_frame, text="Disadvantage",
-            variable=self.advantage_var, value=2,
-            bg="lightblue").pack(side=tk.LEFT)
-        advantage_disadvantage_frame.pack()
-
-    def create_bottom_frame(self):
-        """
-        Creates and configures the bottom frame of the application UI.
-
-        This frame includes:
-            - A horizontal separator for visual separation.
-            - A "Roll Dice" button to trigger the dice rolling logic.
-            - A "Reset" button to reset input values and results.
-            - Labels for displaying advantage status, roll result, critical hit 
-              status, and attack damage.
-
-        The frame is styled with a light blue background and appropriate 
-        padding.
-        The created frame is stored in self.frames[2].
-        """
-        bottom_frame = tk.Frame(self, bg="lightblue")
-        self.frames[2] = bottom_frame
-        separator = tk.Frame(
-            bottom_frame, height=2, bd=1, relief=tk.SUNKEN, bg="lightblue")
-        separator.pack(fill=tk.X, padx=5, pady=5)
-        roll_button = tk.Button(
-            bottom_frame,
-            text="Roll Dice",
-            command=self.roll_dice,
-            borderwidth=10,
-            highlightthickness=10
-        )
-        roll_button.pack(pady=20)
-        reset_button = tk.Button(
-            bottom_frame, text="Reset", command=self.reset_values)
-        reset_button.pack(pady=5)
-        self.advantage_label = tk.Label(
-            bottom_frame, bg="lightblue", text="", font=("Arial", 12))
-        self.advantage_label.pack()
-        self.result_label = tk.Label(
-            bottom_frame, bg="lightblue", text="", font=("Arial", 12))
-        self.result_label.pack()
-        self.crit_label = tk.Label(
-            bottom_frame, bg="lightblue", text="", font=("Arial", 12))
-        self.crit_label.pack()
-        self.attack_damage_label = tk.Label(
-            bottom_frame, bg="lightblue", text="", font=("Arial", 12))
-        self.attack_damage_label.pack()
-        bottom_frame.pack(fill=tk.X, pady=10)
-
-    def show_frame(self):
-        """
-        Displays the appropriate frame in the GUI based on the current value of 
-        `self.frame_variable`.
-
-        This method manages the visibility and order of frames in the 
-        application by packing or forgetting specific frames. It ensures that 
-        only the selected frame (2, 3, or 4) is visible before frame 5, while 
-        hiding the others.
-
-        Behavior:
-            - If `frame_variable` is 3: Shows frame 3, hides frames 2 and 4.
-            - If `frame_variable` is 4: Shows frame 4, hides frames 2 and 3.
-            - Otherwise: Shows frame 2, hides frames 3 and 4.
-        """
-        frame=self.frame_variable.get()
-        if frame==4:
-            self.frames[3].pack_forget()
-            self.frames[5].pack_forget()
-            self.frames[6].pack_forget()
-            self.frames[4].pack(before=self.frames[2])
-        elif frame==5:
-            self.frames[3].pack_forget()
-            self.frames[4].pack_forget()
-            self.frames[6].pack_forget()
-            self.frames[5].pack(before=self.frames[2])
-        elif frame==6:
-            self.frames[3].pack_forget()
-            self.frames[4].pack_forget()
-            self.frames[5].pack_forget()
-            self.frames[6].pack(before=self.frames[2])
-        else:
-            self.frames[4].pack_forget()
-            self.frames[5].pack_forget()
-            self.frames[6].pack_forget()
-            self.frames[3].pack(before=self.frames[2])
-
     def reset_values(self):
         """Set default values for all inputs."""
-        pass
+        self.frame_variable.set("general")
+        self.show_frame()
+        self.skill_combobox.set("Animal Handling")
+        self.saving_throw_combobox.set("Strength")
+        self.weapon_combobox.set("Glaive")
+        self.advantage_var.set(0)
+        self.clear_labels()
 
     def update_advantage_disadvantage(self, check_type="skill", event=None):
         """
@@ -689,13 +716,13 @@ class DiceRollerApp(tk.Tk):
         """
         self.clear_labels()  # Clear all labels before rolling
         frame = self.frame_variable.get()
-        if frame == 4:  # Skill Check
+        if frame == "skill":
             self.d20_check("skill", self.skill_combobox)
-        elif frame == 5:  # Saving Throw
+        elif frame == "save":
             self.d20_check("save", self.saving_throw_combobox)
-        elif frame == 6:  # Weapon Attack
+        elif frame == "weapon":
             self.d20_check("attack", self.weapon_combobox)
-        else:  # General Dice Roll
+        else:  # "general"
             self.general_roll()
 
 
