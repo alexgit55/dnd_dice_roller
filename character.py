@@ -73,6 +73,11 @@ class Character:
             weapon.damage_bonus += self.proficiency_bonus
         self.weapons.append(weapon)
 
+    def get_weapon_list(self):
+        """
+        Get a list of all weapons the character is proficient with.
+        """
+        return [weapon.name for weapon in self.weapons]
 
     def get_check_modifier(self, check, check_type="skill", weapon=None):
         """

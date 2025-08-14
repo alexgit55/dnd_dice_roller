@@ -91,6 +91,7 @@ class DiceRollerApp(tb.Window):
     def __init__(self, player_character):
         super().__init__(themename="darkly")
         self.title("D&D Dice Roller")
+        self.player_character = player_character
         self.create_control_variables()
         self.frames = {}
         self.skill_combobox = None
@@ -99,8 +100,7 @@ class DiceRollerApp(tb.Window):
         self.advantage_label = None
         self.result_label = None
         self.crit_label = None
-        self.attack_damage_label = None
-        self.player_character = player_character
+        self.attack_damage_label = None      
         self.dice = DiceRoller()
         self.create_widgets()
         self.show_frame() # Display the initial frame
@@ -121,11 +121,21 @@ class DiceRollerApp(tb.Window):
         self.frame_variable = tb.StringVar(self)
         self.frame_variable.set("general")  # Default to General Frame
         self.dice_type = tb.StringVar(self)
-        self.dice_type.set("d20")
+        self.dice_type.set("d20") # Default to 20-sided die
         self.number_of_dice = tb.IntVar(self)
         self.number_of_dice.set(1)  # Default to 1
         self.dice_modifier = tb.IntVar(self)
         self.dice_modifier.set(0)  # Default to 0
+        self.skill_var = tb.StringVar(self)
+        # Set default skill to the first skill in the player's skills ability map
+        first_skill = self.player_character.skills.get_ability_list()[0]
+        self.skill_var.set(first_skill)
+        self.saving_throw_var = tb.StringVar(self)
+        first_save = self.player_character.saving_throws.get_ability_list()[0]
+        self.saving_throw_var.set(first_save)  # Default saving throw
+        self.weapon_var = tb.StringVar(self)
+        first_weapon = self.player_character.get_weapon_list()[0]
+        self.weapon_var.set(first_weapon)  # Default weapon
 
     def create_widgets(self):
         """
@@ -237,8 +247,6 @@ class DiceRollerApp(tb.Window):
         """
         general_frame = tb.Frame(self)
         self.frames["general"] = general_frame
-        dice_type = tb.StringVar(general_frame)
-        dice_type.set("d20")
         general_frame_label = tb.Label(
             general_frame,
             text="Choose your Dice: ",
@@ -252,7 +260,7 @@ class DiceRollerApp(tb.Window):
         dice_type_label.pack(side=tb.LEFT, padx=5, pady=5)
         dice_type_menu = tb.OptionMenu(
             general_frame,
-            dice_type, "d4", "d6", "d8", "d10", "d12", "d20", "d100"
+            self.dice_type, "d4", "d6", "d8", "d10", "d12", "d20", "d100"
         )
         dice_type_menu.pack(side=tb.LEFT, padx=5, pady=5)
         number_of_dice_label = tb.Label(
@@ -290,11 +298,15 @@ class DiceRollerApp(tb.Window):
         skill_check_frame = tb.Frame(self)
         self.frames["skill"] = skill_check_frame
         skill_check_label = tb.Label(
-            skill_check_frame, text="Which Skill check to roll?")
+            skill_check_frame, text="Choose Your Skill:",
+            bootstyle="info",
+            font=("Arial", 12, "bold")
+            )
         skill_check_label.pack()
         self.skill_combobox = tb.Combobox(
             skill_check_frame,
-            values=list(Skills.ability_map.keys()),
+            textvariable=self.skill_var,
+            values=self.player_character.skills.get_ability_list(),
             bootstyle="info"
         )
         self.skill_combobox.bind(
@@ -322,10 +334,15 @@ class DiceRollerApp(tb.Window):
         self.frames["save"] = saving_throw_frame
         saving_throw_label = tb.Label(
             saving_throw_frame,
-            text="Which Saving Throw to Roll?")
+            text="Choose your Save: ",
+            bootstyle="info",
+            font=("Arial", 12, "bold")
+            )
         saving_throw_label.pack()
         self.saving_throw_combobox = tb.Combobox(
-            saving_throw_frame, values=list(SavingThrows.ability_map.keys()))
+            saving_throw_frame,
+            textvariable=self.saving_throw_var,
+            values=self.player_character.saving_throws.get_ability_list())
         self.saving_throw_combobox.bind(
             "<<ComboboxSelected>>", lambda event:
                 self.update_advantage_disadvantage("save", event))
@@ -348,13 +365,17 @@ class DiceRollerApp(tb.Window):
         """
         weapon_attack_frame = tb.Frame(self)
         self.frames["weapon"] = weapon_attack_frame
-        tb.Label(weapon_attack_frame, text="Select Weapon:").pack()
+        tb.Label(weapon_attack_frame,
+                 text="Choose Your Weapon:",
+                 bootstyle="info",
+                 font=("Arial", 12, "bold")).pack()
         self.weapon_combobox = tb.Combobox(
-           weapon_attack_frame, values=[weapon.name for weapon in self.player_character.weapons])
+           weapon_attack_frame,
+           textvariable=self.weapon_var,
+           values=self.player_character.get_weapon_list()
+        )
         self.weapon_combobox.pack()
         weapon_attack_frame.pack(fill=tb.X, pady=10)
-
-    
 
     def create_special_ability_frame(self):
         """
@@ -435,6 +456,9 @@ class DiceRollerApp(tb.Window):
             - Otherwise: Shows frame 2, hides frames 3 and 4.
         """
         frame = self.frame_variable.get()
+        # Change the roll button text based on the selected frame
+        roll_button = self.frames["bottom"].children.get('!button')
+        roll_button.config(text=Messages.update_roll_button_text(frame))
         if frame == "skill":
             self.frames["general"].pack_forget()
             self.frames["save"].pack_forget()
@@ -526,35 +550,25 @@ class DiceRollerApp(tb.Window):
             text=f"{combobox}: {dice_rolls} {sign} {abs(modifier)} = {total}"
         )
 
-    def update_attack_damage_label(
-        self,
-        weapon_name,
-        damage_rolls,
-        damage_bonuses,
-        total_damage
-    ):
+    def update_attack_damage_label(self, weapon_name, damage_rolls, damage_bonuses, total_damage):
         """
-        Updates the attack damage label with the provided weapon name, damage 
-        rolls, bonuses, and total damage.
-
+        Updates the attack damage label with the provided weapon name, damage rolls, bonuses, and total damage.
         Args:
             weapon_name (str): The name of the weapon.
             damage_rolls (str): The string representation of the damage rolls.
-            damage_bonuses (str): The string representation of the damage 
-            bonuses.
+            damage_bonuses (str): The string representation of the damage bonuses.
             total_damage (int or str): The total calculated damage.
-
         Returns:
             None
         """
         self.attack_damage_label.config(
-                text=f"{weapon_name} Damage: {damage_rolls} + {damage_bonuses} = {total_damage}")
-
+            text=f"{weapon_name} Damage: {damage_rolls} + {damage_bonuses} = {total_damage}"
+        )
 
     def roll_d20_with_advantage(self, advantage):
         """
         Rolls a 20-sided die (d20) with advantage or disadvantage.
-
+          
         Args:
             advantage (str): Specifies the type of roll. 
                 Accepts 'advantage', 'disadvantage', or None for a normal roll.
@@ -607,6 +621,9 @@ class DiceRollerApp(tb.Window):
         """
         Calculates the total attack damage for a given weapon and dice roll.
 
+                # Update the roll button text whenever the frame changes
+                if hasattr(self, "roll_button") and self.roll_button:
+                    self.roll_button.config(text=self.get_roll_button_text())
         This method determines the minimum attack value and damage bonus based 
         on the weapon's weight type. It parses the weapon's damage dice 
         notation, applies critical hit rules (doubling dice on a roll of 20),

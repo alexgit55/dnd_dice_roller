@@ -28,6 +28,9 @@ class Checks:
         self.proficiencies = []
         self.advantages = []
         self.disadvantages = []
+        
+    def get_ability_list(self):
+        return list(self.ability_map.keys())
 
     def set_proficiencies(self, proficiencies):
         """
@@ -151,3 +154,7 @@ class SavingThrows(Checks):
         "Wisdom": "Wisdom",
         "Charisma": "Charisma"
     }
+
+if __name__ == "__main__":
+    myskills = Skills()
+    print(myskills.get_ability_list())

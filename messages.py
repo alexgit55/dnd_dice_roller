@@ -27,3 +27,15 @@ class Messages:
                 return "YES! Critical Success!"
             case _:
                 return f"Roll Result: {result}"
+            
+    @staticmethod
+    def update_roll_button_text(frame_variable):
+        match frame_variable:
+            case "skill":
+                return "Show Your Skills!"
+            case "save":
+                return "Hold Strong!"
+            case "weapon":
+                return "Bring the Pain!"
+            case _:
+                return "Roll the Dice!"
