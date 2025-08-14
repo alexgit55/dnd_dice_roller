@@ -20,7 +20,6 @@ import ttkbootstrap as tb
 
 import character
 from weapons import Weapon
-from skills_saves import SavingThrows, Skills
 from dice import Dice, DiceRoller
 from messages import Messages
 
@@ -100,7 +99,7 @@ class DiceRollerApp(tb.Window):
         self.advantage_label = None
         self.result_label = None
         self.crit_label = None
-        self.attack_damage_label = None      
+        self.attack_damage_label = None
         self.dice = DiceRoller()
         self.create_widgets()
         self.show_frame() # Display the initial frame
@@ -552,7 +551,8 @@ class DiceRollerApp(tb.Window):
 
     def update_attack_damage_label(self, weapon_name, damage_rolls, damage_bonuses, total_damage):
         """
-        Updates the attack damage label with the provided weapon name, damage rolls, bonuses, and total damage.
+        Updates the attack damage label with the provided weapon name, 
+        damage rolls, bonuses, and total damage.
         Args:
             weapon_name (str): The name of the weapon.
             damage_rolls (str): The string representation of the damage rolls.

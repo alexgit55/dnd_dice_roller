@@ -30,6 +30,12 @@ class Checks:
         self.disadvantages = []
         
     def get_ability_list(self):
+        """
+        Returns a list of ability names available in the ability map.
+
+        Returns:
+            list: A list containing the keys (ability names) from the ability_map dictionary.
+        """
         return list(self.ability_map.keys())
 
     def set_proficiencies(self, proficiencies):

@@ -30,6 +30,19 @@ class Messages:
             
     @staticmethod
     def update_roll_button_text(frame_variable):
+        """
+        Returns a context-specific label for a roll button based on the provided frame variable.
+
+        Args:
+            frame_variable (str): The type of roll context. Expected values are "skill", "save", "weapon", or any other string.
+
+        Returns:
+            str: A label string appropriate for the given roll context.
+                - "Show Your Skills!" for "skill"
+                - "Hold Strong!" for "save"
+                - "Bring the Pain!" for "weapon"
+                - "Roll the Dice!" for any other value
+        """
         match frame_variable:
             case "skill":
                 return "Show Your Skills!"

@@ -56,7 +56,8 @@ class DiceRoller:
         d20_roll(advantage=0):
             Rolls two 20-sided dice (d20) for advantage/disadvantage mechanics.
             Args:
-                advantage (int): 1 for advantage (returns highest), 2 for disadvantage (returns lowest), 0 for normal (returns first roll).
+                advantage (int): 1 for advantage (returns highest), 2 for disadvantage 
+                (returns lowest), 0 for normal (returns first roll).
             Returns:
                 tuple: (list of rolls, selected roll based on advantage/disadvantage)
         total_roll():
@@ -136,10 +137,12 @@ class DiceRoller:
 
     def total_roll(self):
         """
-        Rolls all dice and returns a tuple containing the list of individual dice rolls and their total sum.
+        Rolls all dice and returns a tuple containing the list of individual 
+        dice rolls and their total sum.
 
         Returns:
-            tuple: A tuple where the first element is a list of integers representing the result of each die roll,
+            tuple: A tuple where the first element is a list of integers representing 
+                   the result of each die roll,
                    and the second element is an integer representing the sum of all dice rolls.
         """
         dice_rolls=self.roll_all()
