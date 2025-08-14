@@ -44,6 +44,7 @@ class Character:
         ability = None
         is_proficient = False
         modifier = 0
+        bonus = 0
 
         if check_type == "skill":
             ability = self.skills.ability_map.get(check)
@@ -51,6 +52,7 @@ class Character:
         elif check_type == "save":
             ability = self.saving_throws.ability_map.get(check)
             is_proficient = self.saving_throws.is_proficient(check)
+            bonus += self.save_bonus
         elif check_type == "attack":
             # For weapon attacks, we assume proficiency is always true
             # Get the weapon that matches the name of the check variable
@@ -67,7 +69,7 @@ class Character:
         if is_proficient:
             modifier += self.proficiency_bonus
 
-        return modifier
+        return modifier + bonus
 
 # Example usage
 if __name__ == "__main__":
