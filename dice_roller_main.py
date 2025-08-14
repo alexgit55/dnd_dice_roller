@@ -26,51 +26,68 @@ from dice import Dice, DiceRoller
 from messages import Messages
 
 class DiceRollerApp(tk.Tk):
-    """A Tkinter-based GUI application for rolling dice in Dungeons & Dragons (D&D) gameplay.
-    The DiceRollerApp provides an interactive interface for players to perform various dice rolls,
-    including general dice rolls, skill checks, saving throws, and weapon attacks. It supports
-    rolling with advantage or disadvantage, applies character modifiers, and displays results
+    """A Tkinter-based GUI application for rolling dice in Dungeons & Dragons 
+    (D&D) gameplay. The DiceRollerApp provides an interactive interface for 
+    players to perform various dice rolls, including general dice rolls, skill 
+    checks, saving throws, and weapon attacks. It supports rolling with 
+    advantage or disadvantage, applies character modifiers, and displays results
     in a user-friendly format.
     Features:
         - General dice rolling for any dice type and quantity.
         - Skill checks and saving throws with automatic modifier calculation.
         - Weapon attack rolls with damage calculation based on weapon properties.
         - Advantage/disadvantage mechanics for applicable rolls.
-        - Dynamic UI components for selecting roll type, dice, modifiers, and character abilities.
-        - Result display including roll breakdown, critical hit indication, and damage calculation.
-        player_character: An object representing the player's character, containing relevant
-            attributes such as skills, saving throws, weapons, and proficiency bonus.
+        - Dynamic UI components for selecting roll type, dice, modifiers, and 
+          character abilities.
+        - Result display including roll breakdown, critical hit indication, and 
+          damage calculation.
+        player_character: An object representing the player's character,
+        containing relevant attributes such as skills, saving throws, weapons, 
+        and proficiency bonus.
     Attributes:
-        frame_variable (tk.IntVar): Tracks the currently selected roll type frame.
-        advantage_var (tk.IntVar): Tracks the advantage/disadvantage state for rolls.
+        frame_variable (tk.IntVar): Tracks the currently selected roll type 
+            frame.
+        advantage_var (tk.IntVar): Tracks the advantage/disadvantage state for 
+            rolls.
         frames (dict): Stores references to UI frames for easy management.
         dice (DiceRoller): Dice rolling logic handler.
         skill_combobox (ttk.Combobox): UI element for skill selection.
-        saving_throw_combobox (ttk.Combobox): UI element for saving throw selection.
+        saving_throw_combobox (ttk.Combobox): UI element for saving throw 
+            selection.
         weapon_combobox (ttk.Combobox): UI element for weapon selection.
-        advantage_label (tk.Label): Displays advantage/disadvantage roll details.
+        advantage_label (tk.Label): Displays advantage/disadvantage roll 
+            details.
         result_label (tk.Label): Displays the result of the roll.
         crit_label (tk.Label): Displays critical hit information.
         attack_damage_label (tk.Label): Displays weapon attack damage details.
     Methods:
         clear_labels(): Clears all result display labels.
-        update_advantage_label(advantage, rolls): Updates the advantage/disadvantage label.
+        update_advantage_label(advantage, rolls): Updates the 
+            advantage/disadvantage label.
         update_crit_label(dice_roll): Updates the critical hit label.
-        update_result_label(combobox, dice_roll, modifier): Updates the result label with roll breakdown.
-        update_attack_damage_label(weapon_name, damage_rolls, damage_bonuses, total_damage): Updates the attack damage label.
-        roll_d20_with_advantage(advantage): Rolls a d20 with advantage/disadvantage logic.
+        update_result_label(combobox, dice_roll, modifier): Updates the result 
+            label with roll breakdown.
+        update_attack_damage_label(weapon_name, damage_rolls, damage_bonuses, 
+            total_damage): Updates the attack damage label.
+        roll_d20_with_advantage(advantage): Rolls a d20 with 
+            advantage/disadvantage logic.
         general_roll(): Handles general dice rolling logic.
-        calculate_attack_damage(weapon_name, dice_roll, dice_modifier): Calculates and displays weapon attack damage.
-        d20_check(check_type, combobox): Performs a d20 check for skills, saving throws, or attacks.
+        calculate_attack_damage(weapon_name, dice_roll, dice_modifier): 
+            Calculates and displays weapon attack damage.
+        d20_check(check_type, combobox): Performs a d20 check for skills, saving 
+            throws, or attacks.
         create_widgets(): Initializes and arranges all UI widgets and frames.
-        show_frame(): Displays the appropriate frame based on selected roll type.
+        show_frame(): Displays the appropriate frame based on selected roll 
+            type.
         reset_values(): Resets all input fields to their default values.
-        update_advantage_disadvantage(check_type="skill", event=None): Updates advantage/disadvantage state based on selection.
+        update_advantage_disadvantage(check_type="skill", event=None): Updates 
+            advantage/disadvantage state based on selection.
         roll_dice(): Main handler for rolling dice based on current UI state.
     Usage:
-        Instantiate DiceRollerApp with a player character object and call mainloop() to start the GUI.
+        Instantiate DiceRollerApp with a player character object and call 
+        mainloop() to start the GUI.
     """
-    
+
     def __init__(self, player_character):
         super().__init__()
         self.title("D&D Dice Roller")
@@ -94,37 +111,41 @@ class DiceRollerApp(tk.Tk):
 
     def clear_labels(self):
         """
-        Clears the text of all result-related labels in the UI, including advantage, critical hit, result, and attack damage labels.
+        Clears the text of all result-related labels in the UI, including 
+        advantage, critical hit, result, and attack damage labels.
         """
         self.advantage_label.config(text="")
         self.crit_label.config(text="")
         self.result_label.config(text="")
         self.attack_damage_label.config(text="")
-    
+
     # Helper for updating advantage label
     def update_advantage_label(self, advantage, rolls):
         """
-        Updates the advantage label in the UI to display the result of an advantage or disadvantage roll.
+        Updates the advantage label in the UI to display the result of an 
+        advantage or disadvantage roll.
 
         Args:
             advantage (int): Indicates the type of roll. 
-                1 for advantage, 2 for disadvantage, any other value clears the label.
+                1 for advantage, 2 for disadvantage, any other value clears the 
+                label.
             rolls (list): Contains the roll values and the final result.
                 Expected format: [[roll1, roll2], result].
 
         Returns:
             None
         """
-        if advantage == 1:
-            self.advantage_label.config(text=f"Advantage Roll: {rolls[0][0]} vs {rolls[0][1]} = {rolls[1]}")
-        elif advantage == 2:
-            self.advantage_label.config(text=f"Disadvantage Roll: {rolls[0][0]} vs {rolls[0][1]} = {rolls[1]}")
+        if advantage in (1, 2):
+            roll_type = "Advantage" if advantage == 1 else "Disadvantage"
+            text = f"{roll_type} Roll: {rolls[0][0]} vs {rolls[0][1]} = {rolls[1]}"
+            self.advantage_label.config(text=text)
         else:
             self.advantage_label.config(text="")
 
     def update_crit_label(self, dice_roll):
         """
-        Updates the text of the crit_label widget to display the result message for a given dice roll.
+        Updates the text of the crit_label widget to display the result message 
+        for a given dice roll.
 
         Args:
             dice_roll (int): The value of the dice roll to be displayed.
@@ -134,26 +155,29 @@ class DiceRollerApp(tk.Tk):
         """
         self.crit_label.config(text=f"{Messages.result_message(dice_roll)}")
 
-    def update_result_label(self, combobox, dice_roll, modifier):      
+    def update_result_label(self, combobox, dice_roll, modifier):
         """
-        Updates the result label to display the outcome of a dice roll with a modifier.
+        Updates the result label to display the outcome of a dice roll with a 
+        modifier.
 
         Args:
-            combobox (str): The name or value selected from the combobox, representing the dice type.
+            combobox (str): The name or value selected from the combobox, 
+            representing the dice type.
             dice_roll (int): The result of the dice roll.
-            modifier (int): The modifier to be added or subtracted from the dice roll.
+            modifier (int): The modifier to be added or subtracted from the dice 
+            roll.
 
         The label is updated to show the calculation in the format:
-            "{combobox}: {dice_roll} + {modifier} = {total}" if modifier is non-negative,
-            or "{combobox}: {dice_roll} - {abs(modifier)} = {total}" if modifier is negative.
+            "{combobox}: {dice_roll} + {modifier} = {total}" if modifier is 
+            non-negative,
+            or "{combobox}: {dice_roll} - {abs(modifier)} = {total}" if modifier 
+            is negative.
         """
         total = dice_roll + modifier
-        if modifier < 0:
-            self.result_label.config(
-                text=f"{combobox}: {dice_roll} - {abs(modifier)} = {total}")
-        else:
-            self.result_label.config(
-                text=f"{combobox}: {dice_roll} + {modifier} = {total}")
+        sign = "+" if modifier >= 0 else "-"
+        self.result_label.config(
+            text=f"{combobox}: {dice_roll} {sign} {abs(modifier)} = {total}"
+        )
 
     def update_attack_damage_label(
         self,
@@ -162,10 +186,24 @@ class DiceRollerApp(tk.Tk):
         damage_bonuses,
         total_damage
     ):
+        """
+        Updates the attack damage label with the provided weapon name, damage 
+        rolls, bonuses, and total damage.
+
+        Args:
+            weapon_name (str): The name of the weapon.
+            damage_rolls (str): The string representation of the damage rolls.
+            damage_bonuses (str): The string representation of the damage 
+            bonuses.
+            total_damage (int or str): The total calculated damage.
+
+        Returns:
+            None
+        """
         self.attack_damage_label.config(
                 text=f"{weapon_name} Damage: {damage_rolls} + {damage_bonuses} = {total_damage}")
-    
-    
+
+
     def roll_d20_with_advantage(self, advantage):
         """
         Rolls a 20-sided die (d20) with advantage or disadvantage.
@@ -175,19 +213,25 @@ class DiceRollerApp(tk.Tk):
                 Accepts 'advantage', 'disadvantage', or None for a normal roll.
 
         Returns:
-            list: The result(s) of the d20 roll(s) based on the advantage parameter.
+            list: The result(s) of the d20 roll(s) based on the advantage 
+            parameter.
         """
         rolls = self.dice.d20_roll(advantage=advantage)
         return rolls
-    
+
     def general_roll(self):
         """
         Performs a general dice roll based on user input from the GUI.
 
-        - Retrieves the dice type, number of dice, and modifier from the corresponding GUI widgets.
+        - Retrieves the dice type, number of dice, and modifier from the 
+            corresponding GUI widgets.
         - Clears any previously rolled dice.
-        - If rolling a single d20, checks for advantage/disadvantage and rolls accordingly, updating the GUI labels for advantage and critical hits.
-        - Otherwise, rolls the specified number of dice of the selected type, sums the results, and updates the result label with the total and modifier.
+        - If rolling a single d20, checks for advantage/disadvantage and rolls 
+            accordingly, updating the GUI labels for advantage and critical 
+            hits.
+        - Otherwise, rolls the specified number of dice of the selected type, 
+            sums the results, and updates the result label with the total and 
+            modifier.
 
         Returns:
             None
@@ -214,15 +258,18 @@ class DiceRollerApp(tk.Tk):
         """
         Calculates the total attack damage for a given weapon and dice roll.
 
-        This method determines the minimum attack value and damage bonus based on the weapon's weight type.
-        It parses the weapon's damage dice notation, applies critical hit rules (doubling dice on a roll of 20),
-        and rolls the appropriate number of dice with the specified minimum value. The total damage is computed
-        by summing the dice rolls and adding relevant bonuses, then updates the attack damage label.
+        This method determines the minimum attack value and damage bonus based 
+        on the weapon's weight type. It parses the weapon's damage dice 
+        notation, applies critical hit rules (doubling dice on a roll of 20),
+        and rolls the appropriate number of dice with the specified minimum 
+        value. The total damage is computed by summing the dice rolls and adding 
+        relevant bonuses, then updates the attack damage label.
 
         Args:
             weapon_name (str): The name of the weapon used for the attack.
             dice_roll (int): The result of the attack roll (e.g., d20 roll).
-            dice_modifier (int): The modifier to apply to the damage calculation.
+            dice_modifier (int): The modifier to apply to the damage 
+            calculation.
 
         Returns:
             None
@@ -252,16 +299,20 @@ class DiceRollerApp(tk.Tk):
                 damage_bonuses,
                 total_damage
             )
-    
+
     def d20_check(self, check_type, combobox):
         """
-        Performs a d20 check for the specified check type using the selected value from the combobox.
-        Retrieves the appropriate modifier for the check, determines if advantage/disadvantage applies,
-        rolls the d20 accordingly, and updates the UI labels to reflect the roll, critical status, and result.
-        If the check type is "attack", calculates and displays the attack damage.
+        Performs a d20 check for the specified check type using the selected 
+        value from the combobox. Retrieves the appropriate modifier for the 
+        check, determines if advantage/disadvantage applies, rolls the d20 
+        accordingly, and updates the UI labels to reflect the roll, critical 
+        status, and result. If the check type is "attack", calculates and 
+        displays the attack damage.
         Args:
-            check_type (str): The type of check to perform (e.g., "attack", "skill", etc.).
-            combobox (tkinter.ttk.Combobox): The combobox widget containing selectable options for the check.
+            check_type (str): The type of check to perform (e.g., "attack", 
+            "skill", etc.).
+            combobox (tkinter.ttk.Combobox): The combobox widget containing 
+            selectable options for the check.
         Returns:
             None
         """
@@ -275,7 +326,6 @@ class DiceRollerApp(tk.Tk):
         roll=rolls[1]
         self.update_crit_label(roll)
         self.update_result_label(selected, roll, modifier)
-            
         if check_type == "attack":
             self.calculate_attack_damage(
                 selected,
@@ -285,8 +335,8 @@ class DiceRollerApp(tk.Tk):
 
     def create_widgets(self):
         """
-        Creates and arranges all the widgets for the dice roller application's main window.
-        Refactored to use helper methods for each frame.
+        Creates and arranges all the widgets for the dice roller application's 
+        main window. Refactored to use helper methods for each frame.
         """
         self.create_top_frame()
         self.create_general_frame()
@@ -298,14 +348,17 @@ class DiceRollerApp(tk.Tk):
 
     def create_top_frame(self):
         """
-        Creates the top frame of the application UI, containing radio buttons for selecting the type of dice roll.
+        Creates the top frame of the application UI, containing radio buttons 
+        for selecting the type of dice roll.
         
         The frame includes:
             - A label prompting the user to select the type of roll.
-            - Four radio buttons for "General Dice Roll", "Skill Check", "Saving Throw", and "Weapon Attack".
+            - Four radio buttons for "General Dice Roll", "Skill Check", 
+            "Saving Throw", and "Weapon Attack".
             - A separator line for visual separation.
         
-        The selected radio button updates the frame variable and triggers the display of the corresponding frame.
+        The selected radio button updates the frame variable and triggers the 
+        display of the corresponding frame.
         """
         top_frame = tk.Frame(self, bg="lightblue")
         self.frames[0] = top_frame
@@ -337,15 +390,17 @@ class DiceRollerApp(tk.Tk):
 
     def create_general_frame(self):
         """
-        Creates and configures the general frame for dice rolling options in the GUI.
+        Creates and configures the general frame for dice rolling options in 
+        the GUI.
 
         This frame allows the user to:
             - Select the type of dice to roll (d4, d6, d8, d10, d12, d20).
             - Specify the number of dice to roll (1 to 20).
             - Set a modifier to add to the roll (-20 to 20).
 
-        The frame is styled with a light blue background and contains labels and input widgets
-        for each option. The frame is stored in the `self.frames` dictionary at index 3.
+        The frame is styled with a light blue background and contains labels 
+        and input widgets for each option. The frame is stored in the 
+        `self.frames` dictionary at index 3.
 
         Returns:
             None
@@ -383,11 +438,12 @@ class DiceRollerApp(tk.Tk):
         """
         Creates and configures the skill check frame within the application UI.
 
-        This method initializes a new Tkinter Frame for skill checks, adds a label prompting
-        the user to select a skill, and sets up a Combobox populated with available skills
-        from the Skills.ability_map. The Combobox is bound to an event handler that updates
-        the advantage/disadvantage state when a skill is selected. The frame is stored in
-        the frames dictionary and packed into the main window.
+        This method initializes a new Tkinter Frame for skill checks, adds a 
+        label prompting the user to select a skill, and sets up a Combobox 
+        populated with available skills from the Skills.ability_map. The 
+        Combobox is bound to an event handler that updates the 
+        advantage/disadvantage state when a skill is selected. The frame is 
+        stored in the frames dictionary and packed into the main window.
 
         Side Effects:
             - Modifies self.frames by adding the skill check frame at index 4.
@@ -411,10 +467,11 @@ class DiceRollerApp(tk.Tk):
         """
         Creates and configures the saving throw selection frame in the GUI.
 
-        This method initializes a new frame for saving throw selection, adds a label prompting the user,
-        and sets up a combobox populated with available saving throw abilities. It also binds an event
-        handler to the combobox for updating advantage/disadvantage options when a selection is made.
-        The frame is then packed into the main window layout.
+        This method initializes a new frame for saving throw selection, adds a 
+        label prompting the user, and sets up a combobox populated with 
+        available saving throw abilities. It also binds an event handler to the 
+        combobox for updating advantage/disadvantage options when a selection 
+        is made. The frame is then packed into the main window layout.
 
         Side Effects:
             - Modifies self.frames by adding the saving throw frame at index 5.
@@ -439,12 +496,12 @@ class DiceRollerApp(tk.Tk):
         """
         Creates and configures the weapon attack frame in the GUI.
 
-        This frame allows the user to select a weapon from a dropdown list (combobox)
-        populated with the names of weapons available to the player character.
-        It also adds a visual separator and label for clarity.
+        This frame allows the user to select a weapon from a dropdown list 
+        (combobox) populated with the names of weapons available to the player 
+        character. It also adds a visual separator and label for clarity.
 
-        The frame is stored in the `self.frames` dictionary at index 6 and packed
-        into the main window.
+        The frame is stored in the `self.frames` dictionary at index 6 and 
+        packed into the main window.
 
         Returns:
             None
@@ -463,9 +520,10 @@ class DiceRollerApp(tk.Tk):
 
     def create_advantage_disadvantage_frame(self):
         """
-        Creates and packs a frame containing radio buttons for selecting dice roll mode:
-        Normal, Advantage, or Disadvantage. The selected mode is stored in self.advantage_var.
-        The frame is stored in self.frames[1] and styled with a light blue background.
+        Creates and packs a frame containing radio buttons for selecting dice 
+        roll mode: Normal, Advantage, or Disadvantage. The selected mode is 
+        stored in self.advantage_var. The frame is stored in self.frames[1] and 
+        styled with a light blue background.
         """
         advantage_disadvantage_frame = tk.Frame(self, bg="lightblue")
         self.frames[1] = advantage_disadvantage_frame
@@ -495,9 +553,11 @@ class DiceRollerApp(tk.Tk):
             - A horizontal separator for visual separation.
             - A "Roll Dice" button to trigger the dice rolling logic.
             - A "Reset" button to reset input values and results.
-            - Labels for displaying advantage status, roll result, critical hit status, and attack damage.
+            - Labels for displaying advantage status, roll result, critical hit 
+              status, and attack damage.
 
-        The frame is styled with a light blue background and appropriate padding.
+        The frame is styled with a light blue background and appropriate 
+        padding.
         The created frame is stored in self.frames[2].
         """
         bottom_frame = tk.Frame(self, bg="lightblue")
@@ -529,7 +589,7 @@ class DiceRollerApp(tk.Tk):
             bottom_frame, bg="lightblue", text="", font=("Arial", 12))
         self.attack_damage_label.pack()
         bottom_frame.pack(fill=tk.X, pady=10)
-    
+
     def show_frame(self):
         """
         Displays the appropriate frame in the GUI based on the current value of 
@@ -637,7 +697,7 @@ class DiceRollerApp(tk.Tk):
             self.d20_check("attack", self.weapon_combobox)
         else:  # General Dice Roll
             self.general_roll()
-        
+
 
 if __name__ == "__main__":
     Warryn = character.Character(name="Warryn", proficiency_bonus=4)

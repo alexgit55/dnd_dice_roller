@@ -5,6 +5,36 @@ from skills_saves import SavingThrows, Skills
 
 
 class Character:
+    """
+    Represents a D&D character with ability scores, proficiency bonus, skills, 
+    saving throws, and weapons.
+    Attributes:
+        name (str): The character's name.
+        ability_scores (dict): Mapping of ability names to their scores.
+        proficiency_bonus (int): The character's proficiency bonus.
+        damage_bonus (int): Additional bonus to damage rolls.
+        save_bonus (int): Additional bonus to saving throws.
+        skills (Skills): The character's skill proficiencies.
+        saving_throws (SavingThrows): The character's saving throw 
+        proficiencies.
+        weapons (list): List of Weapon objects the character possesses.
+    Methods:
+        set_ability_score(ability, score):
+            Sets the score for a given ability.
+        get_ability_score(ability):
+            Retrieves the score for a given ability.
+        calculate_ability_modifier(ability):
+            Calculates the modifier for a given ability score.
+        add_weapon(weapon):
+            Adds a weapon to the character's inventory, applying proficiency 
+            bonus if weapon is heavy.
+        get_check_modifier(check, check_type="skill", weapon=None):
+            Returns the modifier for a skill, saving throw, or attack check.
+            - check: Name of the skill, saving throw, or weapon.
+            - check_type: "skill", "save", or "attack".
+            - weapon: Optional Weapon object for attack checks.
+    """
+
     def __init__(self, name, ability_scores=None, proficiency_bonus=2):
         self.name = name
         self.ability_scores = ability_scores if ability_scores else {}
@@ -18,22 +48,31 @@ class Character:
     def set_ability_score(self, ability, score):
         """Set an ability score for the character."""
         self.ability_scores[ability] = score
-        
+
     def get_ability_score(self, ability):
         """Get an ability score for the character."""
         return self.ability_scores.get(ability, 0)
-    
+
     def calculate_ability_modifier(self, ability):
         """Calculate the modifier for an ability score."""
         score = self.get_ability_score(ability)
         return (score - 10) // 2
-    
+
     def add_weapon(self, weapon):
+        """
+        Adds a weapon to the character's arsenal. If the weapon is of type 
+        'Heavy', increases its damage bonus by the character's proficiency bonus 
+        before adding.
+
+        Args:
+            weapon: An object representing the weapon to be added. Must have 
+            'weight_type','damage_bonus', and support being appended to 
+            self.weapons.
+        """
         if weapon.weight_type == "Heavy":
             weapon.damage_bonus += self.proficiency_bonus
         self.weapons.append(weapon)
-        
-            
+
 
     def get_check_modifier(self, check, check_type="skill", weapon=None):
         """
