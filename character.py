@@ -1,7 +1,10 @@
 """Character class for the dice roller application"""
 # This class will save character information and manage dice rolls
 
+from collections import namedtuple
+
 from skills_saves import SavingThrows, Skills
+from dice import Dice, DiceRoller
 
 
 class Character:
@@ -73,12 +76,6 @@ class Character:
             weapon.damage_bonus += self.proficiency_bonus
         self.weapons.append(weapon)
 
-    def get_weapon_list(self):
-        """
-        Get a list of all weapons the character is proficient with.
-        """
-        return [weapon.name for weapon in self.weapons]
-
     def get_check_modifier(self, check, check_type="skill", weapon=None):
         """
         Get the modifier for a skill or saving throw.
@@ -100,7 +97,7 @@ class Character:
         elif check_type == "attack":
             # For weapon attacks, we assume proficiency is always true
             # Get the weapon that matches the name of the check variable
-            weapon = next((w for w in self.weapons if w.name == check), None)
+            weapon = self.get_current_weapon(check)
             if weapon:
                 ability = weapon.ability
             is_proficient = True
@@ -114,6 +111,78 @@ class Character:
             modifier += self.proficiency_bonus
 
         return modifier + bonus
+
+    def get_weapon_list(self):
+        """
+        Get a list of all weapons the character is proficient with.
+        """
+        return [weapon.name for weapon in self.weapons]
+
+    def get_current_weapon(self, weapon_name):
+        """
+        Retrieves the weapon object from the character's weapon list that 
+        matches the given weapon name.
+
+        Args:
+            weapon_name (str): The name of the weapon to retrieve.
+
+        Returns:
+            Weapon or None: The weapon object with the specified name if found, 
+            otherwise None.
+        """
+        weapon=next(
+            (weapon for weapon in self.weapons if weapon.name == weapon_name),
+            None)
+        return weapon
+
+    def weapon_attack(self, attack_roll, weapon_name):
+        """
+        Calculates the total damage dealt by a weapon attack, including modifiers and bonuses.
+        Args:
+            attack_roll (int): The result of the attack roll.
+            weapon_name (str): The name of the weapon being used for the attack.
+        Returns:
+            namedtuple: A named tuple 'TotalAttack' containing:
+                - Weapon (str): The name of the weapon.
+                - Rolls (list): The individual dice rolls for damage.
+                - Bonuses (int): The sum of ability and weapon damage bonuses.
+                - Total (int): The total damage dealt (sum of rolls and bonuses).
+        Notes:
+            - If the weapon is "Heavy", the minimum die roll is increased and a 
+                damage bonus is applied.
+            - If the attack roll matches the weapon's critical score, the number 
+                of damage dice is doubled.
+            - Damage modifiers are calculated based on the weapon's ability.
+        """
+        weapon = self.get_current_weapon(weapon_name)
+        damage_modifier=self.calculate_ability_modifier(weapon.ability)
+        die_minimum=1
+        if weapon.weight_type == "Heavy":
+            die_minimum=3
+            self.damage_bonus=4
+        else:
+            self.damage_bonus=0
+        num_dice = int(weapon.damage[0])  # e.g., "2d6" -> 2
+        die_type = weapon.damage[1:]  # e.g., "2d6" -> "d6"
+        if attack_roll == weapon.crit_score:
+            num_dice *= 2
+        damage_roller = DiceRoller()
+        for _ in range(num_dice):
+            damage_roller.add_dice(Dice(die_type,min_roll=die_minimum))
+        damage_rolls=damage_roller.total_roll()
+        damage_bonuses=damage_modifier+self.damage_bonus
+        total_damage=damage_rolls[1]+damage_bonuses
+
+        total_attack = namedtuple(
+            'TotalAttack',
+            ['Weapon', 'Rolls', 'Bonuses', 'Total']
+        )
+
+        return total_attack(weapon.name,
+                            damage_rolls[0],
+                            damage_bonuses,
+                            total_damage)
+
 
 # Example usage
 if __name__ == "__main__":

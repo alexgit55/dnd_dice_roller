@@ -353,12 +353,13 @@ class DiceRollerApp(tb.Window):
         Returns:
             None
         """
-        weapon_attack_frame = tb.Frame(self)
+        weapon_attack_frame = tb.LabelFrame(
+            self,
+            text="Choose Your Weapon:",
+            padding=(10, 5),
+            bootstyle="info"
+        )
         self.frames["weapon"] = weapon_attack_frame
-        tb.Label(weapon_attack_frame,
-                 text="Choose Your Weapon:",
-                 bootstyle="info",
-                 font=("Arial", 12, "bold")).pack()
         self.weapon_combobox = tb.Combobox(
            weapon_attack_frame,
            textvariable=self.weapon_var,
@@ -419,6 +420,23 @@ class DiceRollerApp(tb.Window):
         button_frame.pack(fill=tb.X, pady=10)
 
     def create_results_frame(self):
+        """
+        Creates and configures the results frame for displaying dice roll outcomes.
+
+        This method initializes a LabelFrame titled "Roll Results" using the 
+        `tb` (presumably ttkbootstrap) library. It adds several labels to 
+        display information such as advantage, result, critical hit status, 
+        and attack damage. The frame and its labels are packed into the parent 
+        widget, and the frame is stored in the `self.frames` dictionary
+        under the key "results".
+
+        Attributes set:
+            - self.frames["results"]: The results LabelFrame.
+            - self.advantage_label: Label for advantage information.
+            - self.result_label: Label for roll result.
+            - self.crit_label: Label for critical hit status.
+            - self.attack_damage_label: Label for attack damage.
+        """
         results_frame = tb.LabelFrame(
             self,
             text="Roll Results",
@@ -616,54 +634,29 @@ class DiceRollerApp(tb.Window):
             self.update_result_label(
                 "General Roll", dice_total[0], dice_total[1], dice_modifier)
 
-    def calculate_attack_damage(self, weapon_name, dice_roll, dice_modifier):
+    def calculate_attack_damage(self, weapon_name, dice_roll):
         """
-        Calculates the total attack damage for a given weapon and dice roll.
-
-                # Update the roll button text whenever the frame changes
-                if hasattr(self, "roll_button") and self.roll_button:
-                    self.roll_button.config(text=self.get_roll_button_text())
-        This method determines the minimum attack value and damage bonus based 
-        on the weapon's weight type. It parses the weapon's damage dice 
-        notation, applies critical hit rules (doubling dice on a roll of 20),
-        and rolls the appropriate number of dice with the specified minimum 
-        value. The total damage is computed by summing the dice rolls and adding 
-        relevant bonuses, then updates the attack damage label.
-
+        Calculates the attack damage for a given weapon using the provided dice roll and modifier,
+        then updates the attack damage label with the results.
         Args:
-            weapon_name (str): The name of the weapon used for the attack.
-            dice_roll (int): The result of the attack roll (e.g., d20 roll).
-            dice_modifier (int): The modifier to apply to the damage 
-            calculation.
-
+            weapon_name (str): The name of the weapon being used for the attack.
+            dice_roll (int): The result of the dice roll for the attack.
+            dice_modifier (int): The modifier to be applied to the dice roll.
         Returns:
             None
         """
-        attack_min=1
-        weapon_modifier = dice_modifier - self.player_character.proficiency_bonus
-        weapon = next((w for w in self.player_character.weapons if w.name == weapon_name), None)
-        if weapon:
-            if weapon.weight_type == "Heavy":
-                attack_min=3
-                self.player_character.damage_bonus = 4
-            else:
-                self.player_character.damage_bonus = 0
-            num_dice = int(weapon.damage[0])  # e.g., "2d6" -> 2
-            die_type = weapon.damage[1:]  # e.g., "2d6" -> "d6"
-            if dice_roll==20:
-                num_dice *= 2
-            self.dice.clear_dice()
-            for _ in range(num_dice):
-                self.dice.add_dice(Dice(die_type, min_roll=attack_min))
-            damage_rolls = self.dice.roll_all()
-            damage_bonuses=weapon_modifier+self.player_character.damage_bonus
-            total_damage = sum(damage_rolls) + damage_bonuses
-            self.update_attack_damage_label(
-                weapon.name,
-                damage_rolls,
-                damage_bonuses,
-                total_damage
-            )
+
+        attack_damage=self.player_character.weapon_attack(
+            dice_roll,
+            weapon_name
+        )
+
+        self.update_attack_damage_label(
+            attack_damage.Weapon,
+            attack_damage.Rolls,
+            attack_damage.Bonuses,
+            attack_damage.Total
+        )
 
     def d20_check(self, check_type, combobox):
         """
@@ -694,8 +687,7 @@ class DiceRollerApp(tb.Window):
         if check_type == "attack":
             self.calculate_attack_damage(
                 selected,
-                roll,
-                modifier
+                roll
             )
 
     def reset_values(self):

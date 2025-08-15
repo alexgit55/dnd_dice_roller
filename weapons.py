@@ -26,7 +26,8 @@ class Weapon:
     """
     def __init__(
         self, name, category, damage_type,
-        damage, ability="Strength", weight_type="normal"):
+        damage, ability="Strength", weight_type="normal",
+        crit_score=20):
 
         self.name = name
         self.category = category
@@ -35,6 +36,7 @@ class Weapon:
         self.ability = ability
         self.damage_bonus = 0
         self.weight_type = weight_type
+        self.crit_score = crit_score
 
     def __str__(self):
         return (f"Weapon: {self.name}, Category: {self.category}, "
