@@ -3,7 +3,7 @@
 
 from collections import namedtuple
 
-from skills_saves import SavingThrows, Skills
+from character_traits import SavingThrows, Skills
 from dice import Dice, DiceRoller
 
 
