@@ -44,7 +44,7 @@ class DiceRollerApp(tb.Window):
         containing relevant attributes such as skills, saving throws, weapons, 
         and proficiency bonus.
     Attributes:
-        frame_variable (tk.IntVar): Tracks the currently selected roll type 
+        frame_var (tk.IntVar): Tracks the currently selected roll type 
             frame.
         advantage_var (tk.IntVar): Tracks the advantage/disadvantage state for 
             rolls.
@@ -110,21 +110,22 @@ class DiceRollerApp(tb.Window):
 
         This method sets up the following tkinter variables:
             - advantage_var (IntVar): Indicates advantage state (0 = Normal).
-            - frame_variable (StringVar): Specifies the current frame ("general" by default).
-            - dice_type (StringVar): Type of dice to roll ("d20" by default).
-            - number_of_dice (IntVar): Number of dice to roll (default is 1).
+            - frame_var (StringVar): Specifies the current frame ("general" by default).
+            - dice_type_var (StringVar): Type of dice to roll ("d20" by default).
+            - num_dice_var (IntVar): Number of dice to roll (default is 1).
             - dice_modifier (IntVar): Modifier to add to the dice roll (default is 0).
         """
         self.advantage_var = tb.IntVar(self)
         self.advantage_var.set(0)  # Default to Normal
-        self.frame_variable = tb.StringVar(self)
-        self.frame_variable.set("general")  # Default to General Frame
-        self.dice_type = tb.StringVar(self)
-        self.dice_type.set("d20") # Default to 20-sided die
-        self.number_of_dice = tb.IntVar(self)
-        self.number_of_dice.set(1)  # Default to 1
-        self.dice_modifier = tb.IntVar(self)
-        self.dice_modifier.set(0)  # Default to 0
+        self.frame_var = tb.StringVar(self)
+        self.frame_var.set("general")  # Default to General Frame
+        self.dice_type_var = tb.StringVar(self)
+        first_die = Dice.get_dice_types()[0]
+        self.dice_type_var.set(first_die)  # Default to first available die
+        self.num_dice_var = tb.IntVar(self)
+        self.num_dice_var.set(1)  # Default to 1
+        self.dice_modifier_var = tb.IntVar(self)
+        self.dice_modifier_var.set(0)  # Default to 0
         self.skill_var = tb.StringVar(self)
         # Set default skill to the first skill in the player's skills ability map
         first_skill = self.player_character.skills.get_ability_list()[0]
@@ -147,7 +148,8 @@ class DiceRollerApp(tb.Window):
         self.create_saving_throw_frame()
         self.create_weapon_attack_frame()
         self.create_advantage_disadvantage_frame()
-        self.create_bottom_frame()
+        self.create_button_frame()
+        self.create_results_frame()
 
     def create_top_frame(self):
         """
@@ -163,31 +165,27 @@ class DiceRollerApp(tb.Window):
         The selected radio button updates the frame variable and triggers the 
         display of the corresponding frame.
         """
-        top_frame = tb.Frame(self)
+        top_frame = tb.LabelFrame(
+            self, text="Select Roll Type", padding=(10, 5),
+            bootstyle="info"
+            )
         self.frames["top"] = top_frame
         top_frame.pack(fill=tb.X)
-        dice_roll_type = tb.Label(
-            top_frame,
-            text="Select which type of roll you want to perform: ",
-            bootstyle="info",
-            font=("Arial", 12, "bold")
-        )
-        dice_roll_type.pack(pady=20)
         tb.Radiobutton(
             top_frame,
-            text="General Dice Roll", variable=self.frame_variable, value="general",
+            text="General Dice Roll", variable=self.frame_var, value="general",
             command=self.show_frame).pack(side=tb.LEFT, padx=5)
         tb.Radiobutton(
             top_frame,
-            text="Skill Check", variable=self.frame_variable, value="skill",
+            text="Skill Check", variable=self.frame_var, value="skill",
             command=self.show_frame).pack(side=tb.LEFT, padx=5)
         tb.Radiobutton(
             top_frame,
-            text="Saving Throw", variable=self.frame_variable, value="save",
+            text="Saving Throw", variable=self.frame_var, value="save",
             command=self.show_frame).pack(side=tb.LEFT, padx=5)
         tb.Radiobutton(
             top_frame,
-            text="Weapon Attack", variable=self.frame_variable, value="weapon",
+            text="Weapon Attack", variable=self.frame_var, value="weapon",
             command=self.show_frame).pack(side=tb.LEFT, padx=5)
 
     def create_advantage_disadvantage_frame(self):
@@ -197,16 +195,13 @@ class DiceRollerApp(tb.Window):
         stored in self.advantage_var. The frame is stored in self.frames["advantage"] and 
         styled with a light blue background.
         """
-        advantage_disadvantage_frame = tb.Frame(
+        advantage_disadvantage_frame = tb.LabelFrame(
             self,
-            padding=(10, 5, 10, 5)
+            text="Roll Mode",
+            padding=(10, 5, 10, 5),
+            bootstyle="info"
             )
         self.frames["advantage"] = advantage_disadvantage_frame
-        tb.Label(
-            advantage_disadvantage_frame, text="Roll Mode:",
-            bootstyle="info",
-            font=("Arial", 12, "bold")
-            ).pack(side=tb.TOP, padx=5)
         tb.Radiobutton(
             advantage_disadvantage_frame, text="Normal",
             variable=self.advantage_var, value=0,
@@ -244,37 +239,36 @@ class DiceRollerApp(tb.Window):
         Returns:
             None
         """
-        general_frame = tb.Frame(self)
-        self.frames["general"] = general_frame
-        general_frame_label = tb.Label(
-            general_frame,
-            text="Choose your Dice: ",
-            bootstyle="info",
-            font=("Arial", 12, "bold")
+        general_frame = tb.LabelFrame(
+            self,
+            text="Choose Your Dice", padding=(10, 5),
+            bootstyle="info"
         )
-        general_frame_label.pack()
+        self.frames["general"] = general_frame
         dice_type_label = tb.Label(
             general_frame,
             text="Select the type of Dice to Roll:")
         dice_type_label.pack(side=tb.LEFT, padx=5, pady=5)
-        dice_type_menu = tb.OptionMenu(
+        dice_type_menu = tb.Combobox(
             general_frame,
-            self.dice_type, "d4", "d6", "d8", "d10", "d12", "d20", "d100"
+            textvariable=self.dice_type_var,
+            values=Dice.get_dice_types(),
+            bootstyle="info"
         )
         dice_type_menu.pack(side=tb.LEFT, padx=5, pady=5)
         number_of_dice_label = tb.Label(
             general_frame, text="How many Dice to Roll?")
         number_of_dice_label.pack()
-        number_of_dice = tb.Spinbox(
+        num_dice_var = tb.Spinbox(
             general_frame, from_=1, to=20, width=5,
-            textvariable=self.number_of_dice)
-        number_of_dice.pack()
+            textvariable=self.num_dice_var)
+        num_dice_var.pack()
         dice_modifier_label = tb.Label(
             general_frame, text="Modifier to add to the roll?")
         dice_modifier_label.pack()
         dice_modifier = tb.Spinbox(
             general_frame, from_=-20, to=20, width=5,
-            textvariable=self.dice_modifier)
+            textvariable=self.dice_modifier_var)
         dice_modifier.pack()
         general_frame.pack(fill=tb.X, pady=10)
 
@@ -294,14 +288,13 @@ class DiceRollerApp(tb.Window):
             - Initializes self.skill_combobox for later use.
             - Packs the skill check frame into the main window.
         """
-        skill_check_frame = tb.Frame(self)
+        skill_check_frame = tb.LabelFrame(
+            self,
+            text="Choose Your Skill",
+            padding=(10, 5),
+            bootstyle="info"
+        )
         self.frames["skill"] = skill_check_frame
-        skill_check_label = tb.Label(
-            skill_check_frame, text="Choose Your Skill:",
-            bootstyle="info",
-            font=("Arial", 12, "bold")
-            )
-        skill_check_label.pack()
         self.skill_combobox = tb.Combobox(
             skill_check_frame,
             textvariable=self.skill_var,
@@ -329,15 +322,13 @@ class DiceRollerApp(tb.Window):
             - Initializes self.saving_throw_combobox for later use.
             - Updates the GUI layout with the new frame and widgets.
         """
-        saving_throw_frame = tb.Frame(self)
+        saving_throw_frame = tb.LabelFrame(
+            self,
+            text="Choose Your Save",
+            padding=(10, 5),
+            bootstyle="info"
+        )
         self.frames["save"] = saving_throw_frame
-        saving_throw_label = tb.Label(
-            saving_throw_frame,
-            text="Choose your Save: ",
-            bootstyle="info",
-            font=("Arial", 12, "bold")
-            )
-        saving_throw_label.pack()
         self.saving_throw_combobox = tb.Combobox(
             saving_throw_frame,
             textvariable=self.saving_throw_var,
@@ -399,9 +390,9 @@ class DiceRollerApp(tb.Window):
         self.special_ability_combobox.pack()
         special_ability_frame.pack(fill=tb.X, pady=10)
 
-    def create_bottom_frame(self):
+    def create_button_frame(self):
         """
-        Creates and configures the bottom frame of the application UI.
+        Creates and configures the button frame of the application UI.
 
         This frame includes:
             - A horizontal separator for visual separation.
@@ -414,35 +405,45 @@ class DiceRollerApp(tb.Window):
         padding.
         The created frame is stored in self.frames["bottom"].
         """
-        bottom_frame = tb.Frame(self)
-        self.frames["bottom"] = bottom_frame
+        button_frame = tb.Frame(self)
+        self.frames["button"] = button_frame
         roll_button = tb.Button(
-            bottom_frame,
+            button_frame,
             text="Roll Dice",
             command=self.roll_dice,
         )
         roll_button.pack(pady=20)
         reset_button = tb.Button(
-            bottom_frame, text="Reset", command=self.reset_values, style="TButton")
+            button_frame, text="Reset", command=self.reset_values, style="TButton")
         reset_button.pack(pady=5)
+        button_frame.pack(fill=tb.X, pady=10)
+
+    def create_results_frame(self):
+        results_frame = tb.LabelFrame(
+            self,
+            text="Roll Results",
+            bootstyle="info",
+            )
+        self.frames["results"] = results_frame
         self.advantage_label = tb.Label(
-            bottom_frame, text="")
+            results_frame, text="")
         self.advantage_label.pack()
         self.result_label = tb.Label(
-            bottom_frame, text="")
+            results_frame, text="")
         self.result_label.pack()
         self.crit_label = tb.Label(
-            bottom_frame, text="")
+            results_frame, text="")
         self.crit_label.pack()
         self.attack_damage_label = tb.Label(
-            bottom_frame, text="")
+            results_frame, text="")
         self.attack_damage_label.pack()
-        bottom_frame.pack(fill=tb.X, pady=10)
+        results_frame.pack(fill=tb.X, pady=10)
+        results_frame.pack(fill=tb.BOTH, pady=10)
 
     def show_frame(self):
         """
         Displays the appropriate frame in the GUI based on the current value of 
-        `self.frame_variable`.
+        `self.frame_var`.
 
         This method manages the visibility and order of frames in the 
         application by packing or forgetting specific frames. It ensures that 
@@ -450,34 +451,34 @@ class DiceRollerApp(tb.Window):
         hiding the others.
 
         Behavior:
-            - If `frame_variable` is 3: Shows frame 3, hides frames 2 and 4.
-            - If `frame_variable` is 4: Shows frame 4, hides frames 2 and 3.
+            - If `frame_var` is 3: Shows frame 3, hides frames 2 and 4.
+            - If `frame_var` is 4: Shows frame 4, hides frames 2 and 3.
             - Otherwise: Shows frame 2, hides frames 3 and 4.
         """
-        frame = self.frame_variable.get()
+        frame = self.frame_var.get()
         # Change the roll button text based on the selected frame
-        roll_button = self.frames["bottom"].children.get('!button')
+        roll_button = self.frames["button"].children.get('!button')
         roll_button.config(text=Messages.update_roll_button_text(frame))
         if frame == "skill":
             self.frames["general"].pack_forget()
             self.frames["save"].pack_forget()
             self.frames["weapon"].pack_forget()
-            self.frames["skill"].pack(before=self.frames["bottom"])
+            self.frames["skill"].pack(before=self.frames["button"])
         elif frame == "save":
             self.frames["general"].pack_forget()
             self.frames["skill"].pack_forget()
             self.frames["weapon"].pack_forget()
-            self.frames["save"].pack(before=self.frames["bottom"])
+            self.frames["save"].pack(before=self.frames["button"])
         elif frame == "weapon":
             self.frames["general"].pack_forget()
             self.frames["skill"].pack_forget()
             self.frames["save"].pack_forget()
-            self.frames["weapon"].pack(before=self.frames["bottom"])
+            self.frames["weapon"].pack(before=self.frames["button"])
         else:
             self.frames["skill"].pack_forget()
             self.frames["save"].pack_forget()
             self.frames["weapon"].pack_forget()
-            self.frames["general"].pack(before=self.frames["bottom"])
+            self.frames["general"].pack(before=self.frames["button"])
 
     def clear_labels(self):
         """
@@ -597,10 +598,9 @@ class DiceRollerApp(tb.Window):
         Returns:
             None
         """
-        dice_type = int(self.frames["general"].children['!optionmenu'].cget('text')[1:])
-        number_of_dice = int(self.frames["general"].children['!spinbox'].get())
+        num_dice_var = int(self.frames["general"].children['!spinbox'].get())
         dice_modifier = int(self.frames["general"].children['!spinbox2'].get())
-        if dice_type == 20 and number_of_dice == 1:
+        if self.dice_type_var.get() == "d20" and num_dice_var == 1:
             advantage = self.advantage_var.get()
             rolls = self.roll_d20_with_advantage(advantage)
             self.update_advantage_label(advantage, rolls)
@@ -609,11 +609,10 @@ class DiceRollerApp(tb.Window):
             self.update_result_label(
                 "General Roll", roll, roll, dice_modifier)
         else:
-            for _ in range(number_of_dice):
-                die = Dice(dice_type)
+            for _ in range(num_dice_var):
+                die = Dice(self.dice_type_var.get())
                 self.dice.add_dice(die)
             dice_total = self.dice.total_roll()
-            print(f"Dice Rolls: {dice_total[0]}, Total: {dice_total[1]}")
             self.update_result_label(
                 "General Roll", dice_total[0], dice_total[1], dice_modifier)
 
@@ -649,8 +648,8 @@ class DiceRollerApp(tb.Window):
                 self.player_character.damage_bonus = 4
             else:
                 self.player_character.damage_bonus = 0
-            num_dice = int(weapon.damage.split('d')[0])
-            die_type = int(weapon.damage.split('d')[1])
+            num_dice = int(weapon.damage[0])  # e.g., "2d6" -> 2
+            die_type = weapon.damage[1:]  # e.g., "2d6" -> "d6"
             if dice_roll==20:
                 num_dice *= 2
             self.dice.clear_dice()
@@ -701,12 +700,19 @@ class DiceRollerApp(tb.Window):
 
     def reset_values(self):
         """Set default values for all inputs."""
-        self.frame_variable.set("general")
-        self.show_frame()
-        self.skill_combobox.set("Animal Handling")
-        self.saving_throw_combobox.set("Strength")
-        self.weapon_combobox.set("Glaive")
-        self.advantage_var.set(0)
+        self.advantage_var.set(0)  # Default to Normal
+        self.frame_var.set("general")  # Default to General Frame
+        first_die = Dice.get_dice_types()[0]
+        self.dice_type_var.set(first_die)  # Default to first available die
+        self.num_dice_var.set(1)  # Default to 1
+        self.dice_modifier.set(0)  # Default to 0
+        # Set default skill to the first skill in the player's skills ability map
+        first_skill = self.player_character.skills.get_ability_list()[0]
+        self.skill_var.set(first_skill)
+        first_save = self.player_character.saving_throws.get_ability_list()[0]
+        self.saving_throw_var.set(first_save)  # Default saving throw
+        first_weapon = self.player_character.get_weapon_list()[0]
+        self.weapon_var.set(first_weapon)  # Default weapon
         self.clear_labels()
 
     def update_advantage_disadvantage(self, check_type="skill", event=None):
@@ -767,7 +773,7 @@ class DiceRollerApp(tb.Window):
         """
         self.clear_labels()  # Clear all labels before rolling
         self.dice.clear_dice()  # Clear previous dice rolls
-        frame = self.frame_variable.get()
+        frame = self.frame_var.get()
         if frame == "skill":
             self.d20_check("skill", self.skill_combobox)
         elif frame == "save":

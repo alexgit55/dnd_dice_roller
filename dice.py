@@ -26,8 +26,28 @@ class Dice:
         roll():
             Rolls the dice and returns a random integer between min_roll and sides (inclusive).
     """
-    def __init__(self,sides, min_roll=1):
-        self.sides = sides
+    dice_types = {
+        "d4": 4,
+        "d6": 6,
+        "d8": 8,
+        "d10": 10,
+        "d12": 12,
+        "d20": 20,
+        "d100": 100
+    }
+
+    @classmethod
+    def get_dice_types(cls):
+        """
+        Returns a list of available dice types.
+
+        Returns:
+            list: A list of strings representing the available dice types.
+        """
+        return list(cls.dice_types.keys())
+
+    def __init__(self, dice_type, min_roll=1):
+        self.sides = Dice.dice_types[dice_type]
         self.min_roll = min_roll
 
     def roll(self):
@@ -123,8 +143,8 @@ class DiceRoller:
                 - int: The selected roll based on advantage/disadvantage/normal.
         """
         self.clear_dice()
-        self.add_dice(Dice(20))
-        self.add_dice(Dice(20))
+        self.add_dice(Dice("d20"))
+        self.add_dice(Dice("d20"))
         rolls = self.roll_all()
         match advantage:
             case 1:

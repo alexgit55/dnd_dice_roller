@@ -52,4 +52,4 @@ class Messages:
             case "weapon":
                 return "Bring the Pain!"
             case _:
-                return "Roll the Dice!"
+                return "Let's Roll!"
