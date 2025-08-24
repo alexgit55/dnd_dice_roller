@@ -16,9 +16,12 @@ Example:
         # ... set up character ...
 """
 
+import tkinter as tk
+
 import ttkbootstrap as tb
 
 import character
+from character_traits import SpecialAbility
 from weapons import Weapon
 from dice import Dice, DiceRoller
 from messages import Messages
@@ -148,8 +151,10 @@ class DiceRollerApp(tb.Window):
         self.create_saving_throw_frame()
         self.create_weapon_attack_frame()
         self.create_advantage_disadvantage_frame()
+        self.create_special_ability_frame()
         self.create_button_frame()
         self.create_results_frame()
+
 
     def create_top_frame(self):
         """
@@ -382,14 +387,39 @@ class DiceRollerApp(tb.Window):
         Returns:
             None
         """
-        special_ability_frame = tb.Frame(self)
+        special_ability_frame = tb.LabelFrame(
+            self,
+            text="Special Abilities",
+            bootstyle="info",
+            padding=(10, 5)
+        )
         self.frames[7] = special_ability_frame
-        tb.Label(special_ability_frame, text="Active Abilities:").pack()
-        self.special_ability_combobox = tb.Combobox(
+        # Create a listbox to display active special abilities
+        self.special_ability_listbox = tk.Listbox(
             special_ability_frame,
-            values=[ability.name for ability in self.player_character.special_abilities])
-        self.special_ability_combobox.pack()
-        special_ability_frame.pack(fill=tb.X, pady=10)
+            selectmode=tk.MULTIPLE
+        )
+        self.special_ability_listbox.pack()
+        for ability in self.player_character.get_special_abilities():
+            self.special_ability_listbox.insert(tk.END, ability.name)
+        special_ability_frame.pack(fill=tk.X, pady=10)
+
+        self.special_ability_listbox.bind("<<ListboxSelect>>",
+                                          lambda event: self.change_active_special_abilities())
+
+    def change_active_special_abilities(self):
+        """
+        Updates the active special abilities based on the user's selection in the listbox.
+
+        This method retrieves the currently selected special abilities from the
+        listbox and updates the player character's active abilities accordingly.
+        """
+        selected_indices = self.special_ability_listbox.curselection()
+        selected_abilities = [
+            self.player_character.get_special_abilities()[i]
+            for i in selected_indices
+        ]
+        self.player_character.set_active_special_abilities(selected_abilities)
 
     def create_button_frame(self):
         """
@@ -694,10 +724,10 @@ class DiceRollerApp(tb.Window):
         """Set default values for all inputs."""
         self.advantage_var.set(0)  # Default to Normal
         self.frame_var.set("general")  # Default to General Frame
-        first_die = Dice.get_dice_types()[0]
-        self.dice_type_var.set(first_die)  # Default to first available die
+        d20_die = Dice.get_dice_types()[5]
+        self.dice_type_var.set(d20_die)  # Default to d20
         self.num_dice_var.set(1)  # Default to 1
-        self.dice_modifier.set(0)  # Default to 0
+        self.dice_modifier_var.set(0)  # Default to 0
         # Set default skill to the first skill in the player's skills ability map
         first_skill = self.player_character.skills.get_ability_list()[0]
         self.skill_var.set(first_skill)
@@ -706,6 +736,7 @@ class DiceRollerApp(tb.Window):
         first_weapon = self.player_character.get_weapon_list()[0]
         self.weapon_var.set(first_weapon)  # Default weapon
         self.clear_labels()
+        self.show_frame()
 
     def update_advantage_disadvantage(self, check_type="skill", event=None):
         """
@@ -795,5 +826,14 @@ if __name__ == "__main__":
     Warryn.add_weapon(Weapon("Maul", "martial", "bludgeoning", "2d6", weight_type="Heavy"))
     Warryn.add_weapon(Weapon("Longbow","martial", "piercing", "1d8", weight_type="Heavy"))
     Warryn.add_weapon(Weapon("Spear","Simple", "piercing", "1d8", weight_type="Normal"))
+    Warryn.add_special_ability(
+        SpecialAbility("Rage", "damage_bonus", 2))
+    Warryn.add_special_ability(
+        SpecialAbility("Great Weapon Master", "damage_bonus",
+                       Warryn.proficiency_bonus))
+    Warryn.add_special_ability(
+        SpecialAbility("Great Weapon Fighting", "dice_min", 3))
+    Warryn.add_special_ability(
+        SpecialAbility("Ring of Protection", "save_bonus", 1))
     app = DiceRollerApp(player_character=Warryn)
     app.mainloop()

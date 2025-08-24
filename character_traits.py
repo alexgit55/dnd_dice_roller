@@ -161,6 +161,55 @@ class SavingThrows(Checks):
         "Charisma": "Charisma"
     }
 
-if __name__ == "__main__":
-    myskills = Skills()
-    print(myskills.get_ability_list())
+class SpecialAbility:
+    """
+    Represents a special ability that can modify character traits such as attack, 
+    damage, initiative, saving throws, and more.
+    Attributes:
+        ability_types (dict): Class-level dictionary mapping ability type keys to 
+            their descriptions.
+        name (str): The name of the special ability.
+        ability_type (str): The type of ability, must be one of the keys in ability_types.
+        bonus_value (int or float): The value of the bonus provided by the ability.
+        is_active (bool): Indicates whether the ability is currently active.
+    Methods:
+        __init__(name, ability_type, bonus_value, is_active=False):
+            Initializes a SpecialAbility instance with the given parameters.
+            Raises KeyError if ability_type is not valid.
+        activate():
+            Activates the special ability.
+        deactivate():
+            Deactivates the special ability.
+    """
+    ability_types = {
+        "attack_bonus": "Bonus to attack rolls.",
+        "damage_bonus": "Bonus to damage rolls.",
+        "initiative_bonus": "Bonus to initiative rolls.",
+        "save_bonus": "Bonus to saving throws.",
+        "dice_min": "Minimum roll value for damage dice.",
+        "crit_score": "Critical hit score."
+    }
+
+    def __init__(
+        self,
+        name,
+        ability_type,
+        bonus_value,
+        is_active=False
+        ):
+
+        self.name=name
+        if ability_type in SpecialAbility.ability_types:
+            self.ability_type=ability_type
+        else:
+            raise KeyError("Invalid Ability Type")
+        self.bonus_value=bonus_value
+        self.is_active=is_active
+
+    def activate(self):
+        """Activate the special ability."""
+        self.is_active = True
+
+    def deactivate(self):
+        """Deactivate the special ability."""
+        self.is_active = False

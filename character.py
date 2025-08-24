@@ -3,8 +3,7 @@
 
 from collections import namedtuple
 
-from character_traits import SavingThrows, Skills
-from dice import Dice, DiceRoller
+from character_traits import SavingThrows, Skills, SpecialAbility
 
 
 class Character:
@@ -47,6 +46,7 @@ class Character:
         self.skills = Skills()
         self.saving_throws = SavingThrows()
         self.weapons = []
+        self.special_abilities=[]
 
     def set_ability_score(self, ability, score):
         """Set an ability score for the character."""
@@ -76,7 +76,10 @@ class Character:
             weapon.damage_bonus += self.proficiency_bonus
         self.weapons.append(weapon)
 
-    def get_check_modifier(self, check, check_type="skill", weapon=None):
+    def add_special_ability(self, special_ability):
+        self.special_abilities.append(special_ability)
+
+    def get_check_modifier(self, check, check_type="skill"):
         """
         Get the modifier for a skill or saving throw.
         check: Name of the skill or saving throw.
@@ -134,6 +137,61 @@ class Character:
             (weapon for weapon in self.weapons if weapon.name == weapon_name),
             None)
         return weapon
+    def get_special_abilities(self):
+        return self.special_abilities
+
+    def get_special_ability(self, ability_name):
+        """
+        Retrieves a special ability by name.
+
+        Args:
+            ability_name (str): The name of the special ability to retrieve.
+
+        Returns:
+            SpecialAbility or None: The special ability object if found, otherwise None.
+        """
+        return next(
+            (ability for ability in self.special_abilities if ability.name == ability_name),
+            None
+        )
+
+    def set_active_special_abilities(self, special_abilities):
+        """
+        Sets the active special abilities for the character.
+
+        Args:
+            special_abilities (list): A list of SpecialAbility objects to set as active.
+        """
+        for ability in self.special_abilities:
+            ability.is_active = ability in special_abilities
+
+    def calculate_special_ability_bonus(self, check_type="attack"):
+        """
+        Calculates the bonus from special abilities based on the check type.
+
+        Args:
+            check_type (str): The type of check being made (e.g., "attack", "damage").
+
+        Returns:
+            int: The total bonus from special abilities.
+        """
+        total_bonus = 0
+        match check_type:
+            case "attack":
+                bonus_types = ["damage_bonus"]
+            case "save":
+                bonus_types = ["save_bonus"]
+            case "skill":
+                bonus_types = ["skill_bonus"]
+            case _:
+                bonus_types = []
+
+        for special_ability in self.special_abilities:
+            if special_ability.ability_type in bonus_types and special_ability.is_active:
+                total_bonus += special_ability.bonus_value
+
+        return total_bonus
+
 
     def weapon_attack(self, attack_roll, weapon_name):
         """
@@ -155,23 +213,16 @@ class Character:
             - Damage modifiers are calculated based on the weapon's ability.
         """
         weapon = self.get_current_weapon(weapon_name)
-        damage_modifier=self.calculate_ability_modifier(weapon.ability)
-        die_minimum=1
+        weapon.damage_bonus=0
+        weapon.damage_min=1
+        damage_modifier=self.calculate_ability_modifier(weapon.ability)      
+        weapon.damage_bonus += damage_modifier
         if weapon.weight_type == "Heavy":
-            die_minimum=3
-            self.damage_bonus=4
-        else:
-            self.damage_bonus=0
-        num_dice = int(weapon.damage[0])  # e.g., "2d6" -> 2
-        die_type = weapon.damage[1:]  # e.g., "2d6" -> "d6"
-        if attack_roll == weapon.crit_score:
-            num_dice *= 2
-        damage_roller = DiceRoller()
-        for _ in range(num_dice):
-            damage_roller.add_dice(Dice(die_type,min_roll=die_minimum))
-        damage_rolls=damage_roller.total_roll()
-        damage_bonuses=damage_modifier+self.damage_bonus
-        total_damage=damage_rolls[1]+damage_bonuses
+            weapon.damage_min=3
+            weapon.damage_bonus += self.calculate_special_ability_bonus("attack")
+
+        damage_rolls=weapon.attack(attack_roll)
+        total_damage=damage_rolls[1]+weapon.damage_bonus
 
         total_attack = namedtuple(
             'TotalAttack',
@@ -180,7 +231,7 @@ class Character:
 
         return total_attack(weapon.name,
                             damage_rolls[0],
-                            damage_bonuses,
+                            weapon.damage_bonus,
                             total_damage)
 
 
