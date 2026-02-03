@@ -79,7 +79,13 @@ class MainWindow:
                 ]),
              sg.Frame('Roll History',
                       layout=[
-                          [sg.Listbox(values=self.roll_history, size=(30, 10), key='roll_history')]],
+                          [sg.Listbox(values=self.roll_history, size=(30, 10), key='roll_history')],
+                          [
+                              sg.Push(),
+                              sg.Button('Clear History', key='clear_history'),
+                              sg.Push(),
+                          ],
+                      ],
                       )
             ]
         ]
@@ -93,6 +99,8 @@ class MainWindow:
                 self.roll_dice()
             if event == 'reset':
                 self.reset_to_default()
+            if event == 'clear_history':
+                self.clear_roll_history()
             if event == sg.WINDOW_CLOSED:
                 break
 
@@ -158,6 +166,10 @@ class MainWindow:
     def update_roll_history(self, result_text):
 
         self.roll_history.append(result_text)
+        self.window['roll_history'].update(values=self.roll_history)
+
+    def clear_roll_history(self):
+        self.roll_history.clear()
         self.window['roll_history'].update(values=self.roll_history)
 
     def reset_to_default(self):
