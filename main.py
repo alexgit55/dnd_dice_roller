@@ -2,11 +2,12 @@ import FreeSimpleGUI as sg
 
 from dice import Die, DiceRoller
 from messages import Messages
+from roll_history import RollHistory, RollResult
 
 class MainWindow:
     def __init__(self):
         self.roller = DiceRoller()
-        self.roll_history = []
+        self.roll_history = RollHistory()
         self.layout = [
             [sg.Frame('Dice Roller',
                 layout=
@@ -79,7 +80,11 @@ class MainWindow:
                 ]),
              sg.Frame('Roll History',
                       layout=[
-                          [sg.Listbox(values=self.roll_history, size=(30, 10), key='roll_history')],
+                          [sg.Listbox(values=self.roll_history.get_rolls(),
+                                      size=(40, 10),
+                                      key='roll_history',
+                                      auto_size_text=True,
+                                      horizontal_scroll=True)],
                           [
                               sg.Push(),
                               sg.Button('Clear History', key='clear_history'),
@@ -87,7 +92,8 @@ class MainWindow:
                           ],
                       ],
                       )
-            ]
+            ],
+            [sg.Push(), sg.Button('Exit', key='exit')]
         ]
 
         self.window = sg.Window('Dice Roller Application', self.layout)
@@ -101,7 +107,7 @@ class MainWindow:
                 self.reset_to_default()
             if event == 'clear_history':
                 self.clear_roll_history()
-            if event == sg.WINDOW_CLOSED:
+            if event in (sg.WIN_CLOSED, 'exit'):
                 break
 
         self.window.close()
@@ -114,21 +120,15 @@ class MainWindow:
         if dice_type == 'd20' and num_dice == 1:
             rolls=self.get_advantage_roll()
             dice_total=rolls[1]
-            self.update_results(num_dice=num_dice,
-                                dice_type=dice_type,
-                                dice_rolls=rolls,
-                                dice_total=dice_total,
-                                dice_modifier=dice_modifier)
+            roll_result = RollResult(num_dice, dice_type, rolls, dice_modifier, dice_total)
+            self.update_results(roll_result)
         else:
             for _ in range(num_dice):
                 die = Die(dice_type)
                 self.roller.add_dice(die)
             dice_total = self.roller.total_roll()
-            self.update_results(num_dice=num_dice,
-                                dice_type=dice_type,
-                                dice_rolls=dice_total[0],
-                                dice_total=dice_total[1],
-                                dice_modifier=dice_modifier)
+            roll_result = RollResult(num_dice, dice_type, dice_total[0], dice_modifier, dice_total[1])
+            self.update_results(roll_result)
 
 
     def get_advantage_roll(self):
@@ -138,39 +138,34 @@ class MainWindow:
             return self.roller.d20_roll(advantage=2)
         return self.roller.d20_roll()
 
-    def update_results(self, num_dice, dice_type, dice_rolls, dice_total=0, dice_modifier=0):
-        total = dice_total + dice_modifier
-        sign = "+" if dice_modifier >= 0 else "-"
-        result_text=f"{num_dice}{dice_type}{sign}{dice_modifier}: "
+    def update_results(self, roll_result: RollResult):
+        result_text=f"{roll_result}: "
         if self.window['advantage_roll'].get():
+            roll_result.advantage = "advantage_roll"
             self.window['advantage_text'].update(value="Rolling with Advantage")
-            result_text += f"{dice_rolls[0]} {dice_total} {sign} {abs(dice_modifier)} = {total}"
         elif self.window['disadvantage_roll'].get():
+            roll_result.advantage = "disadvantage_roll"
             self.window['advantage_text'].update(value="Rolling with Disadvantage")
-            result_text += f"{dice_rolls[0]} {dice_total} {sign} {abs(dice_modifier)} = {total}"
         else:
             self.window['advantage_text'].update(value="")
-            if num_dice == 1:
-                result_text += f"{dice_total} {sign} {abs(dice_modifier)} = {total}"
-            else:
-                result_text += f"{dice_rolls} {dice_total} {sign} {abs(dice_modifier)} = {total}"
+
         self.window['total_text'].update(value=result_text)
 
-        if num_dice == 1 and self.window['dice_type'].get() == 'd20':
-            self.window['message_text'].update(value=f'{Messages.result_message(dice_total)}')
+        if roll_result.num_dice == 1 and self.window['dice_type'].get() == 'd20':
+            self.window['message_text'].update(value=f'{Messages.result_message(roll_result.dice_total)}')
         else:
             self.window['message_text'].update(value="")
 
-        self.update_roll_history(result_text)
+        self.update_roll_history(roll_result)
 
-    def update_roll_history(self, result_text):
+    def update_roll_history(self, roll_result):
 
-        self.roll_history.append(result_text)
-        self.window['roll_history'].update(values=self.roll_history)
+        self.roll_history.add_roll(roll_result)
+        self.window['roll_history'].update(values=self.roll_history.get_rolls())
 
     def clear_roll_history(self):
         self.roll_history.clear()
-        self.window['roll_history'].update(values=self.roll_history)
+        self.window['roll_history'].update(values=self.roll_history.get_rolls())
 
     def reset_to_default(self):
         self.window['advantage_roll'].update(value=False)
