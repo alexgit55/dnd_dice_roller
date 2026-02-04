@@ -84,7 +84,9 @@ class MainWindow:
                                       size=(40, 10),
                                       key='roll_history',
                                       auto_size_text=True,
-                                      horizontal_scroll=True)],
+                                      horizontal_scroll=True,
+                                      enable_events=True,
+                                      tooltip='Click to load a roll into the dice roller.')],
                           [
                               sg.Push(),
                               sg.Button('Clear History', key='clear_history'),
@@ -101,14 +103,19 @@ class MainWindow:
     def run(self):
         while True:
             event, values = self.window.read()
-            if event == 'roll':
-                self.roll_dice()
-            if event == 'reset':
-                self.reset_to_default()
-            if event == 'clear_history':
-                self.clear_roll_history()
-            if event in (sg.WIN_CLOSED, 'exit'):
-                break
+            match event:
+                case 'roll':
+                    self.roll_dice()
+                case 'reset':
+                    self.reset_to_default()
+                case 'clear_history':
+                    self.clear_roll_history()
+                case 'roll_history':
+                    roll = values['roll_history'][0]
+                    self.load_preset(roll)
+
+                case _ if event in (sg.WIN_CLOSED, 'exit'):
+                    break
 
         self.window.close()
 
@@ -177,6 +184,13 @@ class MainWindow:
         self.window['dice_modifier'].update(value=0)
         self.window['dice_count'].update(value=1)
         self.window['dice_type'].update(value='d20')
+
+    def load_preset(self, roll):
+        self.window['dice_modifier'].update(value=roll.dice_modifier)
+        self.window['dice_count'].update(value=roll.num_dice)
+        self.window['dice_type'].update(value=roll.dice_type)
+        self.window[f'{roll.advantage}'].update(value=True)
+
 
 if __name__ == '__main__':
     window = MainWindow()
