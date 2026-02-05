@@ -2,14 +2,33 @@ import FreeSimpleGUI as sg
 
 from dice import Die, DiceRoller
 from messages import Messages
-from roll_history import RollHistory, RollResult
+from roll import RollManager, RollResult
 
 class MainWindow:
     def __init__(self):
         self.roller = DiceRoller()
-        self.roll_history = RollHistory()
+        self.roll_history = RollManager()
+        self.roll_presets = RollManager()
+        self.roll_presets.load_from_file('presets.json')
         self.layout = [
-            [sg.Frame('Dice Roller',
+            [
+                sg.Frame('Roll Presets',
+                         layout=[
+                             [sg.Listbox(values=self.roll_presets.get_rolls(),
+                                         size=(40, 10),
+                                         key='roll_preset',
+                                         auto_size_text=True,
+                                         horizontal_scroll=True,
+                                         enable_events=True,
+                                         tooltip='Click to load a roll into the dice roller.')],
+                             [
+                                 sg.Push(),
+                                 sg.Button('Add Preset', key='add_preset'),
+                                 sg.Push(),
+                             ],
+                         ],
+                ),
+                sg.Frame('Dice Roller',
                 layout=
                 [
                     [
@@ -68,7 +87,7 @@ class MainWindow:
                     ],
                     [
                         sg.Push(),
-                        sg.Frame('Results',
+                        sg.Frame('Result',
                                  layout=[
                                      [sg.Text('', key='advantage_text')],
                                      [sg.Text('', key='total_text')],
@@ -113,7 +132,9 @@ class MainWindow:
                 case 'roll_history':
                     roll = values['roll_history'][0]
                     self.load_preset(roll)
-
+                case 'roll_preset':
+                    roll = values['roll_preset'][0]
+                    self.load_preset(roll)
                 case _ if event in (sg.WIN_CLOSED, 'exit'):
                     break
 
