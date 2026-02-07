@@ -69,6 +69,9 @@ class RollManager:
     def get_roll_index(self, roll):
         return self.rolls.index(roll)
 
+    def update_roll(self, roll, index):
+        self.rolls[index] = roll
+
     def remove_roll(self, index):
         self.rolls.pop(index)
 

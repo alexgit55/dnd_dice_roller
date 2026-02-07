@@ -25,7 +25,10 @@ class MainWindow:
                                          tooltip='Click to load a roll into the dice roller.')],
                              [
                                  sg.Push(),
-                                 sg.Button('Remove Preset', key='remove_preset'),
+                                 sg.Button('Edit Preset',
+                                           key='edit_preset'),
+                                 sg.Button('Remove Preset',
+                                           key='remove_preset'),
                                  sg.Push(),
                              ],
                          ],
@@ -34,34 +37,40 @@ class MainWindow:
                 layout=
                 [
                     [
+                        sg.Push(),
                         sg.Column(
                             layout=[
                                 [sg.Text('How many Dice to Roll?')],
-                                [sg.Spin(values=[i for i in range(1,20)],
+                                [
+                                    sg.Push(),
+                                    sg.Spin(values=[i for i in range(1,20)],
                                         initial_value=1,
                                         key='dice_count',
-                                        size=(5, 1),)
-                                ]
-                            ]),
-                        sg.Column(
-                            layout=[
+                                        size=(5, 1),),
+                                    sg.Push()
+                                ],
                                 [sg.Text("Select the type of Dice to Roll:")],
-                                [sg.Combo(values=Die.get_dice_types(),
+                                [
+                                    sg.Push(),
+                                    sg.Combo(values=Die.get_dice_types(),
                                           default_value='d20',
                                           auto_size_text=True,
                                           key='dice_type',
                                           readonly=True,
-                                          enable_events=True,)]
-                            ]),
-                        sg.Column(
-                            layout=[
+                                          enable_events=True),
+                                    sg.Push()
+                                ],
                                 [sg.Text("Modifier to add to the roll?")],
-                                [sg.Spin(values=[i for i in range(-20, 20)],
+                                [
+                                    sg.Push(),
+                                    sg.Spin(values=[i for i in range(-20, 20)],
                                          key='dice_modifier',
                                          initial_value=0,
-                                         size=(5, 1),)]
-                            ]
-                        )
+                                         size=(5, 1), ),
+                                    sg.Push()
+                                ]
+                            ]),
+                        sg.Push(),
                     ],
                     [sg.HorizontalSeparator()],
                     [
@@ -154,12 +163,16 @@ class MainWindow:
                     self.load_preset(current_preset)
                 case 'save_preset':
                     self.save_preset()
+                case 'edit_preset':
+                    if current_preset is None:
+                        sg.popup_ok('Please select a preset to edit.')
+                        continue
+                    self.edit_preset(current_preset)
                 case 'remove_preset':
                     if current_preset is None:
                         sg.popup_ok('Please select a preset to remove.')
                         continue
-                    roll = values['roll_preset'][0]
-                    self.remove_preset(roll)
+                    self.remove_preset(current_preset)
                 case _ if event in (sg.WIN_CLOSED, 'exit'):
                     break
 
@@ -259,6 +272,24 @@ class MainWindow:
         self.window['status_bar'].update(f'Preset {roll.name} Added Successfully')
 
         self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
+
+    def edit_preset(self, roll):
+        # Prompt user for preset name
+        preset_name = sg.popup_get_text('Enter a name for the preset:',
+                                        default_text=roll.name)
+        roll.name = preset_name
+        roll.advantage = self.get_advantage_selection()
+        roll.num_dice = self.window['dice_count'].get()
+        roll.dice_type = self.window['dice_type'].get()
+        roll.dice_modifier = self.window['dice_modifier'].get()
+        index = self.roll_presets.get_roll_index(roll)
+        self.roll_presets.update_roll(roll, index)
+
+        self.roll_presets.save_to_file('presets.json')
+        self.roll_presets.load_from_file('presets.json')
+        self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
+        self.window['status_bar'].update(f'Preset {roll.name} Updated Successfully')
+
 
     def remove_preset(self, roll):
         confirmation = sg.popup_yes_no(f'Are you sure you want to remove preset "{roll.name}"?')
