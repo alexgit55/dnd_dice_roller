@@ -2,11 +2,13 @@ import FreeSimpleGUI as sg
 
 from dice import Die, DiceRoller
 from messages import Messages
-from roll import RollManager, RollResult
+from roll import RollManager, RollResult, Roll
+
 
 class MainWindow:
     def __init__(self):
         self.roller = DiceRoller()
+        sg.theme('DarkGrey15')
         self.roll_history = RollManager()
         self.roll_presets = RollManager()
         self.roll_presets.load_from_file('presets.json')
@@ -23,7 +25,7 @@ class MainWindow:
                                          tooltip='Click to load a roll into the dice roller.')],
                              [
                                  sg.Push(),
-                                 sg.Button('Add Preset', key='add_preset'),
+                                 sg.Button('Remove Preset', key='remove_preset'),
                                  sg.Push(),
                              ],
                          ],
@@ -81,7 +83,15 @@ class MainWindow:
                     [sg.HorizontalSeparator()],
                     [
                         sg.Push(),
-                        sg.Button("Roll", key='roll'),
+                        sg.Button("Roll Dice",
+                                  key='roll',
+                                  font=('Helvetica', 12, 'bold'),
+                                  size=(10, 1)),
+                        sg.Push()
+                    ],
+                    [
+                        sg.Push(),
+                        sg.Button("Save As Preset", key="save_preset"),
                         sg.Button("Reset", key='reset'),
                         sg.Push(),
                     ],
@@ -114,12 +124,19 @@ class MainWindow:
                       ],
                       )
             ],
-            [sg.Push(), sg.Button('Exit', key='exit')]
+            [
+                sg.StatusBar('Ready',
+                             key='status_bar',
+                             size=(40, 1)
+                             ),
+                sg.Push(),
+                sg.Button('Exit', key='exit')]
         ]
 
         self.window = sg.Window('Dice Roller Application', self.layout)
 
     def run(self):
+        current_preset = None
         while True:
             event, values = self.window.read()
             match event:
@@ -133,8 +150,16 @@ class MainWindow:
                     roll = values['roll_history'][0]
                     self.load_preset(roll)
                 case 'roll_preset':
+                    current_preset = values['roll_preset'][0]
+                    self.load_preset(current_preset)
+                case 'save_preset':
+                    self.save_preset()
+                case 'remove_preset':
+                    if current_preset is None:
+                        sg.popup_ok('Please select a preset to remove.')
+                        continue
                     roll = values['roll_preset'][0]
-                    self.load_preset(roll)
+                    self.remove_preset(roll)
                 case _ if event in (sg.WIN_CLOSED, 'exit'):
                     break
 
@@ -152,12 +177,17 @@ class MainWindow:
             self.update_results(roll_result)
         else:
             for _ in range(num_dice):
-                die = Die(dice_type)
-                self.roller.add_dice(die)
+                self.roller.add_dice(Die(dice_type))
             dice_total = self.roller.total_roll()
             roll_result = RollResult(num_dice, dice_type, dice_total[0], dice_modifier, dice_total[1])
             self.update_results(roll_result)
 
+    def get_advantage_selection(self):
+        if self.window['advantage_roll'].get():
+            return 'advantage_roll'
+        elif self.window['disadvantage_roll'].get():
+            return 'disadvantage_roll'
+        return 'normal_roll'
 
     def get_advantage_roll(self):
         if self.window['advantage_roll'].get():
@@ -167,7 +197,7 @@ class MainWindow:
         return self.roller.d20_roll()
 
     def update_results(self, roll_result: RollResult):
-        result_text=f"{roll_result}: "
+        #result_text=f"{roll_result}"
         if self.window['advantage_roll'].get():
             roll_result.advantage = "advantage_roll"
             self.window['advantage_text'].update(value="Rolling with Advantage")
@@ -177,7 +207,7 @@ class MainWindow:
         else:
             self.window['advantage_text'].update(value="")
 
-        self.window['total_text'].update(value=result_text)
+        self.window['total_text'].update(value=f'{roll_result}')
 
         if roll_result.num_dice == 1 and self.window['dice_type'].get() == 'd20':
             self.window['message_text'].update(value=f'{Messages.result_message(roll_result.dice_total)}')
@@ -195,6 +225,8 @@ class MainWindow:
         self.roll_history.clear()
         self.window['roll_history'].update(values=self.roll_history.get_rolls())
 
+        self.window['status_bar'].update(f'Roll History Cleared')
+
     def reset_to_default(self):
         self.window['advantage_roll'].update(value=False)
         self.window['disadvantage_roll'].update(value=False)
@@ -205,6 +237,39 @@ class MainWindow:
         self.window['dice_modifier'].update(value=0)
         self.window['dice_count'].update(value=1)
         self.window['dice_type'].update(value='d20')
+
+        self.window['status_bar'].update(f'Default Settings Restored')
+
+    def save_preset(self):
+        # Prompt user for preset name
+        preset_name = sg.popup_get_text('Enter a name for the preset:')
+
+        # Check if preset already exists
+        if preset_name in self.roll_presets.get_rolls():
+           sg.popup_ok('Preset already exists. Please choose a different name.')
+
+        roll = Roll(num_dice=self.window['dice_count'].get(),
+                    dice_type=self.window['dice_type'].get(),
+                    dice_modifier=self.window['dice_modifier'].get(),
+                    advantage=self.get_advantage_selection(),
+                    name=preset_name)
+        self.roll_presets.add_roll(roll)
+        self.roll_presets.save_to_file('presets.json')
+        self.roll_presets.load_from_file('presets.json')
+        self.window['status_bar'].update(f'Preset {roll.name} Added Successfully')
+
+        self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
+
+    def remove_preset(self, roll):
+        confirmation = sg.popup_yes_no(f'Are you sure you want to remove preset "{roll.name}"?')
+        if confirmation == 'Yes':
+            index = self.roll_presets.get_roll_index(roll)
+            self.roll_presets.remove_roll(index)
+            self.roll_presets.save_to_file('presets.json')
+            self.roll_presets.load_from_file('presets.json')
+            self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
+
+            self.window['status_bar'].update(f'Preset {roll.name} Removed Successfully')
 
     def load_preset(self, roll):
         self.window['dice_modifier'].update(value=roll.dice_modifier)

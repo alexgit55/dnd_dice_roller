@@ -66,6 +66,12 @@ class RollManager:
         except IndexError:
             raise IndexError("Roll index out of range")
 
+    def get_roll_index(self, roll):
+        return self.rolls.index(roll)
+
+    def remove_roll(self, index):
+        self.rolls.pop(index)
+
     def clear(self):
         self.rolls.clear()
 
@@ -78,6 +84,7 @@ class RollManager:
             json.dump(data_to_write, f, indent=4)
 
     def load_from_file(self, filename):
+        self.clear()
         with open(f'{filename}', 'r', encoding='utf-8') as f:
             rolls_json = f.read()
         rolls_list = json.loads(rolls_json)
