@@ -4,15 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7f8698c3-40cd-4134-8295-9df320a2ec35" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/dnd_dice_roller.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dice.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/messages.py" afterDir="false" />
+    <list default="true" id="7f8698c3-40cd-4134-8295-9df320a2ec35" name="Changes" comment="Fix incorrect modifier formatting in roll output and add essential dependencies to requirements.txt">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/roll.py" beforeDir="false" afterPath="$PROJECT_DIR$/roll.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,12 +17,31 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="9" />
+    <option name="cachedIndexableFilesCount" value="12" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "alexgit55"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/alexgit55/dnd_dice_roller.git",
+    "accountId": "b1e32469-d676-4ff8-9e5a-3ec2c238204f"
+  }
+}]]></component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -38,26 +54,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;ai.playground.ignore.import.keys.banner.in.settings&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Scripts/Python/dnd_dice_roller&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.main.executor": "Run",
+    "Python.roll.executor": "Run",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "ai.playground.ignore.import.keys.banner.in.settings": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Scripts/Python/dnd_dice_roller",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Scripts\Python\dnd_dice_roller" />
@@ -66,8 +83,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-PY-253.30387.127" />
-        <option value="bundled-python-sdk-3944b0c99280-6d6dccd035ac-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.30387.127" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-PY-253.30387.173" />
+        <option value="bundled-python-sdk-4762d8aabb82-6d6dccd035ac-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.30387.173" />
       </set>
     </attachedChunks>
   </component>
@@ -79,14 +96,109 @@
       <option name="presentableId" value="Default" />
       <updated>1770066399286</updated>
       <workItem from="1770066400361" duration="5528000" />
-      <workItem from="1770125143119" duration="15931000" />
+      <workItem from="1770125143119" duration="17213000" />
+      <workItem from="1770213180633" duration="1018000" />
+      <workItem from="1770214436551" duration="11986000" />
+      <workItem from="1770298659468" duration="66000" />
+      <workItem from="1770310381693" duration="11455000" />
+      <workItem from="1770409481217" duration="10249000" />
+      <workItem from="1770474771900" duration="349000" />
+      <workItem from="1770475133067" duration="1691000" />
     </task>
+    <task id="LOCAL-00001" summary="Add initial implementation of D&amp;D Dice Roller, including GUI, dice logic, and messaging system.">
+      <option name="closed" value="true" />
+      <created>1770154696209</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1770154696209</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Add &quot;Clear History&quot; button and functionality to D&amp;D Dice Roller GUI">
+      <option name="closed" value="true" />
+      <created>1770154955589</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1770154955589</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Refactor roll history management and result handling with RollHistory and RollResult classes.">
+      <option name="closed" value="true" />
+      <created>1770227422664</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1770227422664</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Enhance roll history interactions with event handling and add tooltip for user guidance">
+      <option name="closed" value="true" />
+      <created>1770230760618</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1770230760618</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Add roll presets functionality with JSON support and refactor RollHistory to RollManager">
+      <option name="closed" value="true" />
+      <created>1770326257700</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1770326257700</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Add preset management with save and remove functionality, update GUI elements, and improve roll result handling">
+      <option name="closed" value="true" />
+      <created>1770428841802</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1770428841802</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Add &quot;Edit Preset&quot; functionality with GUI support, improve preset updating logic, and refactor related methods">
+      <option name="closed" value="true" />
+      <created>1770431033429</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1770431033429</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Fix incorrect modifier formatting in roll output and add essential dependencies to requirements.txt">
+      <option name="closed" value="true" />
+      <created>1770475817733</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1770475817733</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Add initial implementation of D&amp;D Dice Roller, including GUI, dice logic, and messaging system." />
+    <MESSAGE value="Add &quot;Clear History&quot; button and functionality to D&amp;D Dice Roller GUI" />
+    <MESSAGE value="Refactor roll history management and result handling with RollHistory and RollResult classes." />
+    <MESSAGE value="Enhance roll history interactions with event handling and add tooltip for user guidance" />
+    <MESSAGE value="Add roll presets functionality with JSON support and refactor RollHistory to RollManager" />
+    <MESSAGE value="Add preset management with save and remove functionality, update GUI elements, and improve roll result handling" />
+    <MESSAGE value="Add &quot;Edit Preset&quot; functionality with GUI support, improve preset updating logic, and refactor related methods" />
+    <MESSAGE value="Fix incorrect modifier formatting in roll output and add essential dependencies to requirements.txt" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix incorrect modifier formatting in roll output and add essential dependencies to requirements.txt" />
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/dnd_dice_roller$main.coverage" NAME="main Coverage Results" MODIFIED="1770154563649" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/dnd_dice_roller$main.coverage" NAME="main Coverage Results" MODIFIED="1770475412490" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/dnd_dice_roller$roll.coverage" NAME="roll Coverage Results" MODIFIED="1770317556175" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

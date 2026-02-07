@@ -6,6 +6,25 @@ from roll import RollManager, RollResult, Roll
 
 
 class MainWindow:
+    """
+    Manages the graphical user interface (GUI) for a dice rolling application.
+
+    This class initializes and provides functionality for a PySimpleGUI-based
+    interface to roll dice, manage roll presets, and display roll history. The
+    application supports normal rolls, advantage/disadvantage rolls, and includes
+    options to save, load, and edit roll presets.
+
+    :ivar roller: Utility object to manage dice rolling logic.
+    :type roller: DiceRoller
+    :ivar roll_history: Manager for storing and retrieving the history of dice rolls.
+    :type roll_history: RollManager
+    :ivar roll_presets: Manager for handling save/load functionality of roll presets.
+    :type roll_presets: RollManager
+    :ivar layout: Defines the layout structure of the GUI components.
+    :type layout: list
+    :ivar window: Main GUI window for the dice rolling application.
+    :type window: sg.Window
+    """
     def __init__(self):
         self.roller = DiceRoller()
         sg.theme('DarkGrey15')
@@ -145,6 +164,16 @@ class MainWindow:
         self.window = sg.Window('Dice Roller Application', self.layout)
 
     def run(self):
+        """
+        Executes the main event loop to handle user interaction within the application window.
+
+        This method continuously listens for events triggered by user actions on the GUI and delegates
+        handling these events to corresponding functions. The loop runs indefinitely until the window
+        is closed or an exit event is triggered. The method provides functionality to handle dice rolls,
+        resetting configurations, managing roll history, and performing CRUD operations on presets.
+
+        :raises KeyError: If an invalid option or key is encountered during event handling.
+        """
         current_preset = None
         while True:
             event, values = self.window.read()
@@ -179,6 +208,21 @@ class MainWindow:
         self.window.close()
 
     def roll_dice(self):
+        """
+        Rolls dice based on user input and updates the roll results accordingly.
+
+        This method processes the dice rolling logic. Depending on the user's selected
+        dice type, the number of dice, and any modifiers, it calculates the outcomes of
+        the rolls, considers cases like advantage roll for a single d20, and updates
+        the results through the corresponding method.
+
+        :raises ValueError: Raised if the input values for the dice count or modifier
+            cannot be parsed as integers.
+        :raises AttributeError: Raised if required attributes from the user interface
+            (e.g., `dice_count`, `dice_modifier`, or `dice_type`) are not properly defined.
+
+        :return: None
+        """
         self.roller.clear_dice()
         num_dice=int(self.window['dice_count'].get())
         dice_modifier=int(self.window['dice_modifier'].get())
@@ -196,6 +240,18 @@ class MainWindow:
             self.update_results(roll_result)
 
     def get_advantage_selection(self):
+        """
+        Determines the type of roll selection (advantage, disadvantage, or normal roll)
+        based on the current state of the application window.
+
+        The method checks specific conditions determined by the application window settings to
+        return the appropriate selection, which can be either an advantage roll, disadvantage roll,
+        or a normal roll as default.
+
+        :return: A string indicating the roll selection type. Possible values are:
+                 'advantage_roll', 'disadvantage_roll', or 'normal_roll'.
+        :rtype: str
+        """
         if self.window['advantage_roll'].get():
             return 'advantage_roll'
         elif self.window['disadvantage_roll'].get():
@@ -203,6 +259,18 @@ class MainWindow:
         return 'normal_roll'
 
     def get_advantage_roll(self):
+        """
+        Computes and returns a dice roll based on the current advantage or disadvantage settings.
+
+        The method evaluates whether an advantage or disadvantage roll should be performed based on
+        flags in the `window` attribute. It executes a dice roll using the `roller` object and returns
+        the result based on the settings. If neither advantage nor disadvantage is selected, a regular
+        roll is executed.
+
+        :return: The result of the dice roll. The roll may include an advantage, a disadvantage, or
+            be a regular roll depending on the current state.
+        :rtype: int
+        """
         if self.window['advantage_roll'].get():
             return self.roller.d20_roll(advantage=1)
         elif self.window['disadvantage_roll'].get():
@@ -210,7 +278,14 @@ class MainWindow:
         return self.roller.d20_roll()
 
     def update_results(self, roll_result: RollResult):
-        #result_text=f"{roll_result}"
+        """
+        Updates the result displays and adjusts any relevant roll outcome details based on the current
+        status of advantage or disadvantage selections. Also updates roll-specific messages and maintains
+        the roll history.
+
+        :param roll_result: An instance of RollResult encapsulating details about the result of the dice roll.
+        :type roll_result: RollResult
+        """
         if self.window['advantage_roll'].get():
             roll_result.advantage = "advantage_roll"
             self.window['advantage_text'].update(value="Rolling with Advantage")
@@ -230,17 +305,42 @@ class MainWindow:
         self.update_roll_history(roll_result)
 
     def update_roll_history(self, roll_result):
+        """
+        Updates the roll history with a new roll result and refreshes the associated
+        UI element to display the updated history.
 
+        :param roll_result: The result of the roll to be added to the history.
+        :type roll_result: int
+        :return: None
+        """
         self.roll_history.add_roll(roll_result)
         self.window['roll_history'].update(values=self.roll_history.get_rolls())
 
     def clear_roll_history(self):
+        """
+        Clears the roll history and updates the UI components accordingly.
+
+        This method resets the roll history data by clearing it and then updating
+        the relevant user interface elements, including the roll history display
+        and the status bar message.
+
+        :return: None
+        """
         self.roll_history.clear()
         self.window['roll_history'].update(values=self.roll_history.get_rolls())
 
         self.window['status_bar'].update(f'Roll History Cleared')
 
     def reset_to_default(self):
+        """
+        Resets the application interface to its default settings.
+
+        This method updates various UI elements to default values in the application. It
+        clears input fields, resets roll options to their initial state, and restores
+        the system status to indicate that default settings have been restored.
+
+        :return: None
+        """
         self.window['advantage_roll'].update(value=False)
         self.window['disadvantage_roll'].update(value=False)
         self.window['normal_roll'].update(value=True)
@@ -254,6 +354,16 @@ class MainWindow:
         self.window['status_bar'].update(f'Default Settings Restored')
 
     def save_preset(self):
+        """
+        Prompts the user to save a roll configuration as a preset, ensuring the preset
+        has a unique name, and then persists the preset to a JSON file. Updates the
+        application's status bar and preset dropdown to reflect the new addition.
+
+        :param self: The instance of the class where this method is defined.
+        :type self: object
+
+        :return: None
+        """
         # Prompt user for preset name
         preset_name = sg.popup_get_text('Enter a name for the preset:')
 
@@ -274,6 +384,15 @@ class MainWindow:
         self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
 
     def edit_preset(self, roll):
+        """
+        Edits an existing preset defined by the `roll` object. This method allows the
+        user to modify the roll's name, advantage, number of dice, dice type, and
+        dice modifier through user input and updates the preset collection accordingly.
+
+        :param roll: The roll object representing the preset to be edited.
+        :type roll: object
+        :return: None
+        """
         # Prompt user for preset name
         preset_name = sg.popup_get_text('Enter a name for the preset:',
                                         default_text=roll.name)
@@ -292,6 +411,19 @@ class MainWindow:
 
 
     def remove_preset(self, roll):
+        """
+        Removes a preset from the `roll_presets`, updates the `roll_preset` dropdown, and displays a status
+        message confirming the removal.
+
+        Prompt the user for confirmation before removing the preset. If the user confirms, the specified
+        preset is located by its index, removed from the preset list, and the updated list is saved to a
+        file named `presets.json`. This updated list is then loaded back and the relevant UI components
+        are refreshed.
+
+        :param roll: The preset object to be removed.
+
+        :return: None
+        """
         confirmation = sg.popup_yes_no(f'Are you sure you want to remove preset "{roll.name}"?')
         if confirmation == 'Yes':
             index = self.roll_presets.get_roll_index(roll)
@@ -303,6 +435,17 @@ class MainWindow:
             self.window['status_bar'].update(f'Preset {roll.name} Removed Successfully')
 
     def load_preset(self, roll):
+        """
+        Updates the UI components with the preset values from the provided roll object.
+
+        :param roll: An object containing the following attributes:
+            - dice_modifier: Modifier value to adjust the dice roll.
+            - num_dice: Number of dice to roll.
+            - dice_type: Type of dice to use for the roll.
+            - advantage: A string key indicating the UI element that corresponds
+              to the roll's advantage setting.
+        :return: None
+        """
         self.window['dice_modifier'].update(value=roll.dice_modifier)
         self.window['dice_count'].update(value=roll.num_dice)
         self.window['dice_type'].update(value=roll.dice_type)
