@@ -13,7 +13,7 @@ class Roll:
         if self.dice_modifier >=0:
             modifier_str = f"+{abs(self.dice_modifier)}"
         else:
-            modifier_str = f"{abs(self.dice_modifier)}"
+            modifier_str = f"-{abs(self.dice_modifier)}"
 
         if self.advantage != 'normal_roll':
             return f"{self.name}: {self.num_dice}{self.dice_type}{modifier_str} ({self.advantage})"
