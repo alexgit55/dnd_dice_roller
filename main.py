@@ -128,7 +128,19 @@ class MainWindow:
                         sg.Frame('Result',
                                  layout=[
                                      [sg.Text('', key='advantage_text')],
-                                     [sg.Text('', key='total_text')],
+                                     [
+                                         sg.Text('',
+                                                 key='total_text',
+                                                 font=('Helvetica', 16, 'bold')),
+                                         sg.Text('',
+                                                 key='equal_sign',
+                                                 font=('Helvetica', 16, 'bold')),
+                                         sg.Text('',
+                                                 key='dice_total',
+                                                 font=('Helvetica', 18, 'bold'),
+                                                 text_color='red')
+
+                                    ],
                                      [sg.Text('', key='message_text')]
                                  ]
                                  ),
@@ -295,7 +307,9 @@ class MainWindow:
         else:
             self.window['advantage_text'].update(value="")
 
-        self.window['total_text'].update(value=f'{roll_result}')
+        self.window['total_text'].update(value=f'{roll_result.get_shorthand()}')
+        self.window['equal_sign'].update(value='=')
+        self.window['dice_total'].update(value=f'{roll_result.total}')
 
         if roll_result.num_dice == 1 and self.window['dice_type'].get() == 'd20':
             self.window['message_text'].update(value=f'{Messages.result_message(roll_result.dice_total)}')
@@ -350,6 +364,8 @@ class MainWindow:
         self.window['dice_modifier'].update(value=0)
         self.window['dice_count'].update(value=1)
         self.window['dice_type'].update(value='d20')
+        self.window['equal_sign'].update(value='')
+        self.window['dice_total'].update(value='')
 
         self.window['status_bar'].update(f'Default Settings Restored')
 
@@ -364,8 +380,10 @@ class MainWindow:
 
         :return: None
         """
-        # Prompt user for preset name
+        # Prompt user for preset name, if user clicks cancel, return without saving
         preset_name = sg.popup_get_text('Enter a name for the preset:')
+        if preset_name is None:
+            return
 
         # Check if preset already exists
         if preset_name in self.roll_presets.get_rolls():

@@ -108,8 +108,11 @@ class RollResult (Roll):
         self.sign = "+" if dice_modifier >= 0 else "-"
         self.total = dice_total + dice_modifier
 
+    def get_shorthand(self):
+        return f"{self.num_dice}{self.dice_type}{self.sign}{abs(self.dice_modifier)}"
+
     def __repr__(self):
-        dice_shorthand=f"{self.num_dice}{self.dice_type}{self.sign}{abs(self.dice_modifier)}"
+        dice_shorthand=self.get_shorthand()
         if self.advantage != 'normal_roll':
             dice_details=f"{self.dice_rolls[0]} {self.dice_total}{self.sign}{abs(self.dice_modifier)} = {self.total}"
         else:
