@@ -9,8 +9,18 @@ from google import genai
 from google.genai import types
 
 class Messages:
-    """Class to handle messages and results display in the application."""
+    """
+    Encapsulates functionalities for handling structured messaging tasks.
 
+    This class is responsible for generating and managing messages tied to specific inputs,
+    like a d20 roll result. It utilizes a content generation model for dynamic and contextually
+    appropriate responses.
+
+    :ivar gemini_api_key: API key for authentication with the content generation model.
+    :type gemini_api_key: str
+    :ivar client: Client object for interacting with the content generation model.
+    :type client: genai.Client
+    """
     def __init__(self):
         load_dotenv()
         self.gemini_api_key = os.getenv("GEMINI_API_KEY")
