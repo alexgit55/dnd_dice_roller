@@ -31,6 +31,7 @@ class MainWindow:
         self.roll_history = RollManager()
         self.roll_presets = RollManager()
         self.roll_presets.load_from_file('presets.json')
+        self.roll_result_messages = Messages()
         self.layout = [
             [
                 sg.Frame('Roll Presets',
@@ -373,7 +374,8 @@ class MainWindow:
         self.window['dice_total'].update(value=f'{roll_result.total}')
 
         if roll_result.num_dice == 1 and self.window['dice_type'].get() == 'd20':
-            self.window['message_text'].update(value=f'{Messages.result_message(roll_result.dice_total)}')
+            result_message = self.roll_result_messages.result_message(roll_result.dice_total)
+            self.window['message_text'].update(value=f'{result_message}')
         else:
             self.window['message_text'].update(value="")
 

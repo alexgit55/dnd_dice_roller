@@ -8,15 +8,15 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-load_dotenv()
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-client = genai.Client(api_key=gemini_api_key)
-
 class Messages:
     """Class to handle messages and results display in the application."""
 
-    @staticmethod
-    def result_message(result):
+    def __init__(self):
+        load_dotenv()
+        self.gemini_api_key = os.getenv("GEMINI_API_KEY")
+        self.client = genai.Client(api_key=self.gemini_api_key)
+
+    def result_message(self, result):
         """
         Generate a message based on the result of a d20 roll.
 
@@ -29,47 +29,52 @@ class Messages:
         :return: A string message reflecting the mood or reaction based on the roll result.
         :rtype: str
         """
-        response = ""
+        result_text = ""
         match result:
             case s if s == 1:
-                response = client.models.generate_content(
+                response = self.client.models.generate_content(
                     model="gemini-3-flash-preview",
-                    contents="Write a quick one sentence miserable reaction to rolling a 1 on a d20.",
+                    contents="Write a quick one sentence miserable reaction to getting a critical failure on a d20.",
                     config=types.GenerateContentConfig(
                         thinking_config=types.ThinkingConfig(thinking_level="minimal"))
                 )
-            case s if 1 < s < 10:
-                response = client.models.generate_content(
+                result_text = response.text
+            case s if 2 < s < 10:
+                response = self.client.models.generate_content(
                     model="gemini-3-flash-preview",
-                    contents="Write a quick one sentence sad reaction to rolling low on d20.",
+                    contents="Write a quick one sentence sad reaction to rolling low but above a critical failure on d20.",
                     config=types.GenerateContentConfig(
                         thinking_config=types.ThinkingConfig(thinking_level="minimal"))
                 )
+                result_text = response.text
             case s if 10 <= s < 15:
-                response = client.models.generate_content(
+                response = self.client.models.generate_content(
                     model="gemini-3-flash-preview",
                     contents="Write a quick one sentence neutral reaction to rolling above average on a d20.",
                     config=types.GenerateContentConfig(
                         thinking_config=types.ThinkingConfig(thinking_level="minimal"))
                 )
+                result_text = response.text
             case s if 15 <= s < 20:
-                response = client.models.generate_content(
+                response = self.client.models.generate_content(
                     model="gemini-3-flash-preview",
                     contents="Write a quick one sentence happy reaction to getting a high roll on a d20.",
                     config=types.GenerateContentConfig(
                         thinking_config=types.ThinkingConfig(thinking_level="minimal"))
                 )
+                result_text = response.text
             case s if s == 20:
-                response = client.models.generate_content(
+                response = self.client.models.generate_content(
                     model="gemini-3-flash-preview",
-                    contents="Write a quick one sentence excited reaction to rolling a 20 on a d20.",
+                    contents="Write a quick one sentence excited reaction getting a critical success on a d20.",
                     config=types.GenerateContentConfig(
                         thinking_config=types.ThinkingConfig(thinking_level="minimal"))
                 )
+                result_text = response.text
             case _:
-                response = f"Roll Result: {result}"
+                result_text = f"Roll Result: {result}"
 
-        return response.text
+        return result_text
 
 if __name__ == "__main__":
     load_dotenv()
