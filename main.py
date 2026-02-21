@@ -278,6 +278,17 @@ class MainWindow:
             self.update_results(roll_result)
 
     def get_preset_selection(self):
+        """
+        Determines the type of preset selected by the user from the provided GUI window.
+
+        This method evaluates the state of specific GUI elements to decide which preset type
+        is currently selected. If none of the predefined preset types are active, it defaults
+        to returning 'custom'.
+
+        :return: A string representing the selected preset type. Possible values are:
+         'skill', 'save', 'ability', or 'custom'.
+        :rtype: str
+        """
         if self.window['skill_presets'].get():
             return 'skill'
         elif self.window['save_presets'].get():
@@ -287,7 +298,16 @@ class MainWindow:
         return 'custom'
 
     def refresh_roll_presets_list(self):
+        """
+        Refreshes the roll presets dropdown list in the user interface based on the selected roll type.
 
+        This method retrieves the currently selected roll type from the preset selection, fetches the associated
+        list of roll presets, and updates the dropdown widget in the user interface with this new list. It also
+        clears any previous selection to ensure stale presets are not used inadvertently.
+
+        :raises KeyError: If the required key for updating the user interface is not found.
+        :return: None
+        """
         roll_type = self.get_preset_selection()
         self.window['roll_preset'].update(values=self.roll_presets.get_rolls(roll_type=roll_type))
         self.window['roll_preset'].update(set_to_index=[])  # clear selection so you don’t load stale preset
