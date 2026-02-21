@@ -5,7 +5,7 @@
         "dice_type": "d20",
         "dice_modifier": 2,
         "advantage": "normal_roll",
-        "type": "custom"
+        "roll_type": "custom"
     },
     {
         "name": "Acrobatics",
@@ -13,7 +13,7 @@
         "dice_type": "d20",
         "dice_modifier": 2,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Animal Handling",
@@ -21,7 +21,7 @@
         "dice_type": "d20",
         "dice_modifier": 5,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Arcana",
@@ -29,7 +29,7 @@
         "dice_type": "d20",
         "dice_modifier": -1,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Athletics",
@@ -37,7 +37,7 @@
         "dice_type": "d20",
         "dice_modifier": 8,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
         {
         "name": "Deception",
@@ -45,7 +45,7 @@
         "dice_type": "d20",
         "dice_modifier": 0,
         "advantage": "advantage_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "History",
@@ -53,7 +53,7 @@
         "dice_type": "d20",
         "dice_modifier": -1,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Insight",
@@ -61,7 +61,7 @@
         "dice_type": "d20",
         "dice_modifier": 1,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Intimidation",
@@ -69,7 +69,7 @@
         "dice_type": "d20",
         "dice_modifier": 4,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Investigation",
@@ -77,7 +77,7 @@
         "dice_type": "d20",
         "dice_modifier": -1,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Medicine",
@@ -85,7 +85,7 @@
         "dice_type": "d20",
         "dice_modifier": -1,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Nature",
@@ -93,7 +93,7 @@
         "dice_type": "d20",
         "dice_modifier": -1,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Perception",
@@ -101,7 +101,7 @@
         "dice_type": "d20",
         "dice_modifier": 5,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Performance",
@@ -109,7 +109,7 @@
         "dice_type": "d20",
         "dice_modifier": 0,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Persuasion",
@@ -117,7 +117,7 @@
         "dice_type": "d20",
         "dice_modifier": 0,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Religion",
@@ -125,7 +125,7 @@
         "dice_type": "d20",
         "dice_modifier": -1,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Sleight of Hand",
@@ -133,7 +133,7 @@
         "dice_type": "d20",
         "dice_modifier": 2,
         "advantage": "advantage_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Stealth",
@@ -141,7 +141,7 @@
         "dice_type": "d20",
         "dice_modifier": 2,
         "advantage": "disadvantage_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Survival",
@@ -149,7 +149,7 @@
         "dice_type": "d20",
         "dice_modifier": 5,
         "advantage": "normal_roll",
-        "type": "skill"
+        "roll_type": "skill"
     },
     {
         "name": "Strength Save",
@@ -157,7 +157,7 @@
         "dice_type": "d20",
         "dice_modifier": 10,
         "advantage": "normal_roll",
-        "type": "save"
+        "roll_type": "save"
     },
     {
         "name": "Dexterity Save",
@@ -165,7 +165,7 @@
         "dice_type": "d20",
         "dice_modifier": 4,
         "advantage": "normal_roll",
-        "type": "save"
+        "roll_type": "save"
     },
     {
         "name": "Constitution Save",
@@ -173,7 +173,7 @@
         "dice_type": "d20",
         "dice_modifier": 10,
         "advantage": "normal_roll",
-        "type": "save"
+        "roll_type": "save"
     },
     {
         "name": "Intelligence Save",
@@ -181,7 +181,7 @@
         "dice_type": "d20",
         "dice_modifier": 1,
         "advantage": "advantage_roll",
-        "type": "save"
+        "roll_type": "save"
     },
     {
         "name": "Wisdom Save",
@@ -189,7 +189,7 @@
         "dice_type": "d20",
         "dice_modifier": 3,
         "advantage": "advantage_roll",
-        "type": "save"
+        "roll_type": "save"
     },
     {
         "name": "Charisma Save",
@@ -197,7 +197,7 @@
         "dice_type": "d20",
         "dice_modifier": 2,
         "advantage": "normal_roll",
-        "type": "save"
+        "roll_type": "save"
     },
     {
         "name": "Strength Check",
@@ -205,7 +205,7 @@
         "dice_type": "d20",
         "dice_modifier": 4,
         "advantage": "normal_roll",
-        "type": "ability"
+        "roll_type": "ability"
     },
     {
         "name": "Dexterity Check",
@@ -213,7 +213,7 @@
         "dice_type": "d20",
         "dice_modifier": 2,
         "advantage": "normal_roll",
-        "type": "ability"
+        "roll_type": "ability"
     },
     {
         "name": "Constitution Check",
@@ -221,7 +221,7 @@
         "dice_type": "d20",
         "dice_modifier": 4,
         "advantage": "normal_roll",
-        "type": "ability"
+        "roll_type": "ability"
     },
     {
         "name": "Intelligence Check",
@@ -229,7 +229,7 @@
         "dice_type": "d20",
         "dice_modifier": -1,
         "advantage": "normal_roll",
-        "type": "ability"
+        "roll_type": "ability"
     },
     {
         "name": "Wisdom Check",
@@ -237,7 +237,7 @@
         "dice_type": "d20",
         "dice_modifier": 1,
         "advantage": "normal_roll",
-        "type": "ability"
+        "roll_type": "ability"
     },
     {
         "name": "Charisma Check",
@@ -245,6 +245,6 @@
         "dice_type": "d20",
         "dice_modifier": 0,
         "advantage": "normal_roll",
-        "type": "ability"
+        "roll_type": "ability"
     }
 ]

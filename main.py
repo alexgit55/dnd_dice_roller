@@ -35,13 +35,36 @@ class MainWindow:
             [
                 sg.Frame('Roll Presets',
                          layout=[
-                             [sg.Listbox(values=self.roll_presets.get_rolls(),
+                             [
+                                 sg.Radio("Skills",
+                                          key='skill_presets',
+                                          group_id='preset_type',
+                                          default=True,
+                                          enable_events=True),
+                                 sg.Radio("Saves",
+                                          key='save_presets',
+                                          group_id='preset_type',
+                                          default=False,
+                                          enable_events=True),
+                                 sg.Radio("Abilities",
+                                          key='ability_presets',
+                                          group_id='preset_type',
+                                          default=False,
+                                          enable_events=True),
+                                 sg.Radio("Custom",
+                                          key='custom_presets',
+                                          group_id='preset_type',
+                                          default=False,
+                                          enable_events=True),
+                             ],
+                             [sg.Listbox(values=self.roll_presets.get_rolls(roll_type='skill'),
                                          size=(40, 10),
                                          key='roll_preset',
                                          auto_size_text=True,
                                          horizontal_scroll=True,
                                          enable_events=True,
-                                         tooltip='Click to load a roll into the dice roller.')],
+                                         tooltip='Click to load a roll into the dice roller.')
+                             ],
                              [
                                  sg.Push(),
                                  sg.Button('Edit Preset',
@@ -190,6 +213,9 @@ class MainWindow:
         while True:
             event, values = self.window.read()
             match event:
+                case 'skill_presets' | 'save_presets' | 'ability_presets' | 'custom_presets':
+                    current_preset = None
+                    self.refresh_roll_presets_list()
                 case 'roll':
                     self.roll_dice()
                 case 'reset':
@@ -250,6 +276,21 @@ class MainWindow:
             dice_total = self.roller.total_roll()
             roll_result = RollResult(num_dice, dice_type, dice_total[0], dice_modifier, dice_total[1])
             self.update_results(roll_result)
+
+    def get_preset_selection(self):
+        if self.window['skill_presets'].get():
+            return 'skill'
+        elif self.window['save_presets'].get():
+            return 'save'
+        elif self.window['ability_presets'].get():
+            return 'ability'
+        return 'custom'
+
+    def refresh_roll_presets_list(self):
+
+        roll_type = self.get_preset_selection()
+        self.window['roll_preset'].update(values=self.roll_presets.get_rolls(roll_type=roll_type))
+        self.window['roll_preset'].update(set_to_index=[])  # clear selection so you don’t load stale preset
 
     def get_advantage_selection(self):
         """
@@ -393,7 +434,8 @@ class MainWindow:
                     dice_type=self.window['dice_type'].get(),
                     dice_modifier=self.window['dice_modifier'].get(),
                     advantage=self.get_advantage_selection(),
-                    name=preset_name)
+                    name=preset_name,
+                    roll_type="custom")
         self.roll_presets.add_roll(roll)
         self.roll_presets.save_to_file('presets.json')
         self.roll_presets.load_from_file('presets.json')
@@ -442,15 +484,18 @@ class MainWindow:
 
         :return: None
         """
-        confirmation = sg.popup_yes_no(f'Are you sure you want to remove preset "{roll.name}"?')
-        if confirmation == 'Yes':
-            index = self.roll_presets.get_roll_index(roll)
-            self.roll_presets.remove_roll(index)
-            self.roll_presets.save_to_file('presets.json')
-            self.roll_presets.load_from_file('presets.json')
-            self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
+        if roll.roll_type == 'custom':
+            confirmation = sg.popup_yes_no(f'Are you sure you want to remove preset "{roll.name}"?')
+            if confirmation == 'Yes':
+                index = self.roll_presets.get_roll_index(roll)
+                self.roll_presets.remove_roll(index)
+                self.roll_presets.save_to_file('presets.json')
+                self.roll_presets.load_from_file('presets.json')
+                self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
 
-            self.window['status_bar'].update(f'Preset {roll.name} Removed Successfully')
+                self.window['status_bar'].update(f'Preset {roll.name} Removed Successfully')
+        else:
+            sg.popup_ok('Cannot remove built-in presets.')
 
     def load_preset(self, roll):
         """

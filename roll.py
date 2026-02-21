@@ -24,12 +24,13 @@ class Roll:
         'disadvantage').
     :type advantage: str
     """
-    def __init__(self, num_dice, dice_type, dice_modifier, name='', advantage='normal_roll'):
+    def __init__(self, num_dice, dice_type, dice_modifier, name='', advantage='normal_roll', roll_type='custom'):
         self.name = name
         self.num_dice = num_dice
         self.dice_type = dice_type
         self.dice_modifier = dice_modifier
         self.advantage = advantage
+        self.roll_type=roll_type
 
     def __repr__(self):
         if self.dice_modifier >=0:
@@ -150,7 +151,7 @@ class RollManager:
         """
         self.rolls.append(roll)
 
-    def get_rolls(self):
+    def get_rolls(self, roll_type=None):
         """
         Retrieves the list of rolls.
 
@@ -161,7 +162,10 @@ class RollManager:
         :return: The list of rolls.
         :rtype: list
         """
-        return self.rolls
+        if roll_type is None:
+            return self.rolls
+        else:
+            return [roll for roll in self.rolls if roll.roll_type == roll_type]
 
     def get_roll(self, index):
         """
