@@ -27,6 +27,31 @@ class Messages:
         self.client = genai.Client(api_key=self.gemini_api_key)
         self.model = "gemini-2.5-flash"
 
+    def get_ai_response(self, prompt):
+        """
+        Generates a response from an AI model based on the provided prompt.
+
+        The method communicates with the AI client, issues a content generation request
+        using the specified model, and returns the generated response text. In case of
+        an exception during the process, it returns an empty string.
+
+        :param prompt: A string containing the input query or text for the AI model.
+        :type prompt: str
+
+        :return: A string containing the AI-generated response. Returns an empty
+                 string if an exception occurs.
+        :rtype: str
+        """
+        try:
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt
+            )
+        except Exception:
+            return ""
+        else:
+            return response.text
+
     def result_message(self, result):
         """
         Generate a message based on the result of a d20 roll.
@@ -43,35 +68,15 @@ class Messages:
         result_text = ""
         match result:
             case s if s == 1:
-                response = self.client.models.generate_content(
-                    model=self.model,
-                    contents="Write a quick one sentence miserable reaction to getting a critical failure on a d20."
-                )
-                result_text = response.text
+                result_text = self.get_ai_response("Write a quick one sentence miserable reaction to getting a critical failure on a d20.")
             case s if 2 < s < 10:
-                response = self.client.models.generate_content(
-                    model=self.model,
-                    contents="Write a quick one sentence sad reaction to rolling low but above a critical failure on d20."
-                )
-                result_text = response.text
+                result_text = self.get_ai_response("Write a quick one sentence sad reaction to rolling low but above a critical failure on d20.")
             case s if 10 <= s < 15:
-                response = self.client.models.generate_content(
-                    model=self.model,
-                    contents="Write a quick one sentence neutral reaction to rolling above average on a d20."
-                )
-                result_text = response.text
+                result_text=self.get_ai_response("Write a quick one sentence neutral reaction to rolling above average on a d20.")
             case s if 15 <= s < 20:
-                response = self.client.models.generate_content(
-                    model=self.model,
-                    contents="Write a quick one sentence happy reaction to getting a high roll on a d20."
-                )
-                result_text = response.text
+                result_text=self.get_ai_response("Write a quick one sentence happy reaction to getting a high roll on a d20.")
             case s if s == 20:
-                response = self.client.models.generate_content(
-                    model=self.model,
-                    contents="Write a quick one sentence excited reaction getting a critical success on a d20."
-                )
-                result_text = response.text
+                result_text=self.get_ai_response("Write a quick one sentence excited reaction getting a critical success on a d20.")
             case _:
                 result_text = f"Roll Result: {result}"
 
