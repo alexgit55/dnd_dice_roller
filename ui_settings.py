@@ -35,4 +35,5 @@ class UISettings:
 
         sg.set_options(
             font=UISettings.normal_font
+
         )
