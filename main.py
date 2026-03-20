@@ -5,6 +5,8 @@ from messages import Messages
 from roll import RollManager, RollResult, Roll
 from window_layout import build_layout
 from ui_settings import UISettings
+import character
+import character_traits
 
 
 class MainWindow:
@@ -34,8 +36,9 @@ class MainWindow:
         self.roll_presets = RollManager()
         self.roll_presets.load_from_file('presets.json')
         self.roll_result_messages = Messages()
+        self.character=None
         self.layout = build_layout(
-            preset_values=self.roll_presets.get_rolls(roll_type="skill"),
+            preset_values=self.roll_presets.get_rolls(roll_type="custom"),
             history_values=self.roll_history.get_rolls(),
         )
 
@@ -119,6 +122,72 @@ class MainWindow:
             dice_total = self.roller.total_roll()
             roll_result = RollResult(num_dice, dice_type, dice_total[0], dice_modifier, dice_total[1])
             self.update_results(roll_result)
+
+    def load_character(self, character):
+        self.character=character
+
+    def set_character_default_presets(self):
+        num_dice=1
+        dice_type='d20'
+        for name, ability in character_traits.Skills.ability_map.items():
+            skill_name=name
+            dice_modifier=self.character.calculate_ability_modifier(ability)
+            if skill_name in self.character.skills.proficiencies:
+                dice_modifier+=self.character.proficiency_bonus
+            roll_type="skill"
+            if self.character.skills.has_advantage(skill_name):
+                advantage="advantage_roll"
+            elif self.character.skills.has_disadvantage(skill_name):
+                advantage="disadvantage_roll"
+            else:
+                advantage="normal_roll"
+            roll=Roll(
+                num_dice=num_dice,
+                dice_type=dice_type,
+                dice_modifier=dice_modifier,
+                advantage=advantage,
+                name=skill_name,
+                roll_type=roll_type,
+            )
+            self.roll_presets.add_roll(roll)
+
+        for name, ability in character_traits.SavingThrows.ability_map.items():
+            save_name=name
+            dice_modifier=self.character.calculate_ability_modifier(ability)
+            if name in self.character.saving_throws.proficiencies:
+                dice_modifier+=self.character.proficiency_bonus
+            roll_type="save"
+            if self.character.saving_throws.has_advantage(save_name):
+                advantage="advantage_roll"
+            elif self.character.saving_throws.has_disadvantage(save_name):
+                advantage="disadvantage_roll"
+            else:
+                advantage="normal_roll"
+            roll=Roll(
+                num_dice=num_dice,
+                dice_type=dice_type,
+                dice_modifier=dice_modifier,
+                advantage=advantage,
+                name=save_name,
+                roll_type=roll_type,
+            )
+            self.roll_presets.add_roll(roll)
+
+        for name in ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]:
+            ability=name
+            dice_modifier=self.character.calculate_ability_modifier(ability)
+            roll_type="ability"
+            advantage = "normal_roll"
+            roll=Roll(
+                num_dice=num_dice,
+                dice_type=dice_type,
+                dice_modifier=dice_modifier,
+                advantage=advantage,
+                name=ability,
+                roll_type=roll_type,
+            )
+            self.roll_presets.add_roll(roll)
+
 
     def get_preset_selection(self):
         """
@@ -317,21 +386,24 @@ class MainWindow:
         :type roll: object
         :return: None
         """
-        # Prompt user for preset name
-        preset_name = sg.popup_get_text('Enter a name for the preset:',
-                                        default_text=roll.name)
-        roll.name = preset_name
-        roll.advantage = self.get_advantage_selection()
-        roll.num_dice = self.window['dice_count'].get()
-        roll.dice_type = self.window['dice_type'].get()
-        roll.dice_modifier = self.window['dice_modifier'].get()
-        index = self.roll_presets.get_roll_index(roll)
-        self.roll_presets.update_roll(roll, index)
+        if roll.roll_type == 'custom':
+            # Prompt user for preset name
+            preset_name = sg.popup_get_text('Enter a name for the preset:',
+                                            default_text=roll.name)
+            roll.name = preset_name
+            roll.advantage = self.get_advantage_selection()
+            roll.num_dice = self.window['dice_count'].get()
+            roll.dice_type = self.window['dice_type'].get()
+            roll.dice_modifier = self.window['dice_modifier'].get()
+            index = self.roll_presets.get_roll_index(roll)
+            self.roll_presets.update_roll(roll, index)
 
-        self.roll_presets.save_to_file('presets.json')
-        self.roll_presets.load_from_file('presets.json')
-        self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
-        self.window['status_bar'].update(f'Preset {roll.name} Updated Successfully')
+            self.roll_presets.save_to_file('presets.json')
+            self.roll_presets.load_from_file('presets.json')
+            self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
+            self.window['status_bar'].update(f'Preset {roll.name} Updated Successfully')
+        else:
+            sg.popup_ok('Cannot edit built-in presets.')
 
 
     def remove_preset(self, roll):
@@ -380,6 +452,23 @@ class MainWindow:
 
 
 if __name__ == '__main__':
+    John = character.Character(name="John", proficiency_bonus=4)
+    John.saving_throws.set_proficiencies(["Strength", "Constitution"])
+    John.saving_throws.set_advantages(["Dexterity","Intelligence","Wisdom","Charisma"])
+    John.skills.set_proficiencies(
+        ["Animal Handling", "Athletics", "Intimidation", "Perception", "Survival"]
+    )
+    John.skills.set_advantages(["Deception","Sleight of Hand"])
+    John.skills.set_disadvantages(["Stealth"])
+    John.set_ability_score("Strength", 19)
+    John.set_ability_score("Dexterity", 14)
+    John.set_ability_score("Constitution", 18)
+    John.set_ability_score("Intelligence", 9)
+    John.set_ability_score("Wisdom", 12)
+    John.set_ability_score("Charisma", 10)
+
     UISettings.apply_theme()
     window = MainWindow()
+    window.load_character(John)
+    window.set_character_default_presets()
     window.run()

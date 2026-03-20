@@ -253,7 +253,7 @@ class RollManager:
         :type filename: str
         :return: None
         """
-        data_to_write = [Roll.encode_roll(roll) for roll in self.rolls]
+        data_to_write = [Roll.encode_roll(roll) for roll in self.rolls if roll.roll_type == 'custom']
         with open(f'{filename}', 'w', encoding='utf-8') as f:
             json.dump(data_to_write, f, indent=4)
 

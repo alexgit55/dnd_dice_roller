@@ -66,19 +66,23 @@ class Messages:
         :rtype: str
         """
         result_text = ""
+        adjective = ""
         match result:
             case s if s == 1:
-                result_text = self.get_ai_response("Write a quick one sentence miserable reaction to getting a critical failure on a d20.")
-            case s if 2 < s < 10:
-                result_text = self.get_ai_response("Write a quick one sentence sad reaction to rolling low but above a critical failure on d20.")
-            case s if 10 <= s < 15:
-                result_text=self.get_ai_response("Write a quick one sentence neutral reaction to rolling above average on a d20.")
-            case s if 15 <= s < 20:
-                result_text=self.get_ai_response("Write a quick one sentence happy reaction to getting a high roll on a d20.")
+                adjective="miserable"
+            case s if 2 <= s <= 10:
+                adjective = "sad"
+            case s if 11 <= s < 15:
+                adjective = "neutral"
+            case s if 16 <= s < 20:
+                adjective = "happy"
             case s if s == 20:
-                result_text=self.get_ai_response("Write a quick one sentence excited reaction getting a critical success on a d20.")
+                adjective = "excited"
             case _:
                 result_text = f"Roll Result: {result}"
+
+        if result_text == "":
+            result_text=self.get_ai_response(f"Write a quick one sentence {adjective} reaction getting a {s} on a d20.")
 
         return result_text
 
