@@ -4,7 +4,7 @@
         "num_dice": 1,
         "dice_type": "d20",
         "dice_modifier": 2,
-        "advantage": "normal_roll",
+        "advantage": "advantage_roll",
         "roll_type": "custom"
     },
     {
@@ -12,6 +12,38 @@
         "num_dice": 2,
         "dice_type": "d6",
         "dice_modifier": 12,
+        "advantage": "normal_roll",
+        "roll_type": "custom"
+    },
+    {
+        "name": "Brimstone GS Raging",
+        "num_dice": 2,
+        "dice_type": "d6",
+        "dice_modifier": 14,
+        "advantage": "normal_roll",
+        "roll_type": "custom"
+    },
+    {
+        "name": "Melee Attack",
+        "num_dice": 1,
+        "dice_type": "d20",
+        "dice_modifier": 10,
+        "advantage": "normal_roll",
+        "roll_type": "custom"
+    },
+    {
+        "name": "Composite Bow",
+        "num_dice": 1,
+        "dice_type": "d8",
+        "dice_modifier": 8,
+        "advantage": "normal_roll",
+        "roll_type": "custom"
+    },
+    {
+        "name": "Ranged Attack",
+        "num_dice": 1,
+        "dice_type": "d20",
+        "dice_modifier": 6,
         "advantage": "normal_roll",
         "roll_type": "custom"
     }

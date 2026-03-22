@@ -69,6 +69,9 @@ class Character:
             ability = self.saving_throws.ability_map.get(check)
             is_proficient = self.saving_throws.is_proficient(check)
             bonus += self.save_bonus
+        elif check_type == "ability":
+            ability = check
+
 
         if ability is not None:
             modifier = self.calculate_ability_modifier(ability)

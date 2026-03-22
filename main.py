@@ -131,10 +131,11 @@ class MainWindow:
         dice_type='d20'
         for name, ability in character_traits.Skills.ability_map.items():
             skill_name=name
-            dice_modifier=self.character.calculate_ability_modifier(ability)
-            if skill_name in self.character.skills.proficiencies:
-                dice_modifier+=self.character.proficiency_bonus
             roll_type="skill"
+            dice_modifier=self.character.get_check_modifier(
+                check=skill_name,
+                check_type=roll_type,
+            )
             if self.character.skills.has_advantage(skill_name):
                 advantage="advantage_roll"
             elif self.character.skills.has_disadvantage(skill_name):
@@ -153,10 +154,11 @@ class MainWindow:
 
         for name, ability in character_traits.SavingThrows.ability_map.items():
             save_name=name
-            dice_modifier=self.character.calculate_ability_modifier(ability)
-            if name in self.character.saving_throws.proficiencies:
-                dice_modifier+=self.character.proficiency_bonus
-            roll_type="save"
+            roll_type = "save"
+            dice_modifier = self.character.get_check_modifier(
+                check=save_name,
+                check_type=roll_type,
+            )
             if self.character.saving_throws.has_advantage(save_name):
                 advantage="advantage_roll"
             elif self.character.saving_throws.has_disadvantage(save_name):
@@ -175,8 +177,11 @@ class MainWindow:
 
         for name in ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]:
             ability=name
-            dice_modifier=self.character.calculate_ability_modifier(ability)
             roll_type="ability"
+            dice_modifier = self.character.get_check_modifier(
+                check=ability,
+                check_type=roll_type,
+            )
             advantage = "normal_roll"
             roll=Roll(
                 num_dice=num_dice,
@@ -397,10 +402,10 @@ class MainWindow:
             roll.dice_modifier = self.window['dice_modifier'].get()
             index = self.roll_presets.get_roll_index(roll)
             self.roll_presets.update_roll(roll, index)
-
             self.roll_presets.save_to_file('presets.json')
             self.roll_presets.load_from_file('presets.json')
             self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
+            self.set_character_default_presets()
             self.window['status_bar'].update(f'Preset {roll.name} Updated Successfully')
         else:
             sg.popup_ok('Cannot edit built-in presets.')
@@ -428,7 +433,7 @@ class MainWindow:
                 self.roll_presets.save_to_file('presets.json')
                 self.roll_presets.load_from_file('presets.json')
                 self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
-
+                self.set_character_default_presets()
                 self.window['status_bar'].update(f'Preset {roll.name} Removed Successfully')
         else:
             sg.popup_ok('Cannot remove built-in presets.')
@@ -466,6 +471,7 @@ if __name__ == '__main__':
     John.set_ability_score("Intelligence", 9)
     John.set_ability_score("Wisdom", 12)
     John.set_ability_score("Charisma", 10)
+    John.save_bonus=2
 
     UISettings.apply_theme()
     window = MainWindow()
