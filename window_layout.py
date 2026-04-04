@@ -23,6 +23,11 @@ def build_layout(*, preset_values, history_values):
     """
     return [
         [
+            sg.Text("",
+                    size=(60, 1),
+                    key="character_name"),
+        ],
+        [
             sg.Frame(
                 "Roll Presets",
                 layout=[

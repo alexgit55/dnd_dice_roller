@@ -40,6 +40,15 @@ class Checks:
         """
         return list(self.ability_map.keys())
 
+    def get_proficiencies(self):
+        """
+        Retrieves the proficiencies associated with the object.
+
+        :return: A list or other iterable containing the proficiencies of the object.
+        :rtype: list
+        """
+        return self.proficiencies
+
     def set_proficiencies(self, proficiencies):
         """
         Sets the proficiencies for the instance.
@@ -49,6 +58,15 @@ class Checks:
         """
         self.proficiencies = proficiencies
 
+    def get_advantages(self):
+        """
+        Retrieves the advantages associated with the instance.
+
+        :return: The list of advantages.
+        :rtype: list
+        """
+        return self.advantages
+
     def set_advantages(self, advantages):
         """
         Sets the advantages for the current instance.
@@ -57,6 +75,18 @@ class Checks:
             advantages (Any): The advantages to be assigned to the instance.
         """
         self.advantages = advantages
+
+    def get_disadvantages(self):
+        """
+        Retrieves the disadvantages associated with the instance.
+
+        This method returns a value, which represents the disadvantages
+        present in the context of the implemented logic.
+
+        :return: The disadvantages of the instance.
+        :rtype: Any
+        """
+        return self.disadvantages
 
     def set_disadvantages(self, disadvantages):
         """

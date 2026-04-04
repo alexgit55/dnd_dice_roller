@@ -5,8 +5,8 @@ from messages import Messages
 from roll import RollManager, RollResult, Roll
 from window_layout import build_layout
 from ui_settings import UISettings
-import character
 import character_traits
+from character_store import CharacterStore
 
 
 class MainWindow:
@@ -42,7 +42,7 @@ class MainWindow:
             history_values=self.roll_history.get_rolls(),
         )
 
-        self.window = sg.Window('Dice Roller Application', self.layout)
+        self.window = sg.Window('Dice Roller Application', self.layout, finalize=True)
 
     def run(self):
         """
@@ -125,6 +125,9 @@ class MainWindow:
 
     def load_character(self, character):
         self.character=character
+        self.set_character_default_presets()
+        text_intro=f"Currently Loaded Character: {self.character.name}"
+        self.window['character_name'].update(value=text_intro)
 
     def set_character_default_presets(self):
         num_dice=1
@@ -457,24 +460,10 @@ class MainWindow:
 
 
 if __name__ == '__main__':
-    John = character.Character(name="John", proficiency_bonus=4)
-    John.saving_throws.set_proficiencies(["Strength", "Constitution"])
-    John.saving_throws.set_advantages(["Dexterity","Intelligence","Wisdom","Charisma"])
-    John.skills.set_proficiencies(
-        ["Animal Handling", "Athletics", "Intimidation", "Perception", "Survival"]
-    )
-    John.skills.set_advantages(["Deception","Sleight of Hand"])
-    John.skills.set_disadvantages(["Stealth"])
-    John.set_ability_score("Strength", 19)
-    John.set_ability_score("Dexterity", 14)
-    John.set_ability_score("Constitution", 18)
-    John.set_ability_score("Intelligence", 9)
-    John.set_ability_score("Wisdom", 12)
-    John.set_ability_score("Charisma", 10)
-    John.save_bonus=2
+    character_list = CharacterStore()
+    character_list.load_characters()
 
     UISettings.apply_theme()
     window = MainWindow()
-    window.load_character(John)
-    window.set_character_default_presets()
+    window.load_character(character_list.get_character("Warryn"))
     window.run()

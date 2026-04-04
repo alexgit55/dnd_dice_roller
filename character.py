@@ -31,13 +31,58 @@ class Character:
             - weapon: Optional Weapon object for attack checks.
     """
 
-    def __init__(self, name, ability_scores=None, proficiency_bonus=2):
+    def __init__(self, name, character_id, ability_scores=None, proficiency_bonus=2, save_bonus=0):
         self.name = name
+        self.character_id = character_id
         self.ability_scores = ability_scores if ability_scores else {}
         self.proficiency_bonus = proficiency_bonus
-        self.save_bonus = 0
+        self.save_bonus = save_bonus
         self.skills = Skills()
         self.saving_throws = SavingThrows()
+
+    def __repr__(self):
+        return f"Character(name={self.name}, character_id={self.character_id})"
+
+    def to_dict(self):
+        return {
+            "character_id": self.character_id,
+            "name": self.name,
+            "proficiency_bonus": self.proficiency_bonus,
+            "save_bonus": self.save_bonus,
+            "ability_scores": self.ability_scores,
+            "skills": {
+                "proficiencies": self.skills.get_proficiencies(),
+                "advantages": self.skills.get_advantages(),
+                "disadvantages": self.skills.get_disadvantages(),
+            },
+            "saving_throws": {
+                "proficiencies": self.saving_throws.get_proficiencies(),
+                "advantages": self.saving_throws.get_advantages(),
+                "disadvantages": self.saving_throws.get_disadvantages(),
+            },
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        character = cls(
+            character_id=data["character_id"],
+            name=data["name"],
+            proficiency_bonus=data.get("proficiency_bonus", 2),
+            save_bonus=data.get("save_bonus", 0),
+            ability_scores=data.get("ability_scores", {}),
+        )
+
+        skills_data = data.get("skills", {})
+        character.skills.set_proficiencies(skills_data.get("proficiencies", []))
+        character.skills.set_advantages(skills_data.get("advantages", []))
+        character.skills.set_disadvantages(skills_data.get("disadvantages", []))
+
+        saves_data = data.get("saving_throws", {})
+        character.saving_throws.set_proficiencies(saves_data.get("proficiencies", []))
+        character.saving_throws.set_advantages(saves_data.get("advantages", []))
+        character.saving_throws.set_disadvantages(saves_data.get("disadvantages", []))
+
+        return character
 
     def set_ability_score(self, ability, score):
         """Set an ability score for the character."""

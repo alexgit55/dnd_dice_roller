@@ -1,0 +1,26 @@
+[
+    {
+        "character_id": "c-001",
+        "name": "Warryn",
+        "proficiency_bonus": 4,
+        "save_bonus": 2,
+        "ability_scores": {
+          "Strength": 19,
+          "Dexterity": 14,
+          "Constitution": 18,
+          "Intelligence": 9,
+          "Wisdom": 12,
+          "Charisma": 10
+        },
+       "skills": {
+         "proficiencies": ["Animal Handling", "Athletics", "Intimidation", "Perception", "Survival"],
+         "advantages": ["Deception", "Sleight of Hand"],
+         "disadvantages": ["Stealth"]
+      },
+      "saving_throws": {
+        "proficiencies": ["Strength", "Constitution"],
+        "advantages": ["Dexterity", "Intelligence", "Wisdom", "Charisma"],
+        "disadvantages": []
+      }
+    }
+]
