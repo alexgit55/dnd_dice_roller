@@ -2,7 +2,8 @@ import FreeSimpleGUI as sg
 
 from dice import Die, DiceRoller
 from messages import Messages
-from roll import RollManager, RollResult, Roll
+from roll import RollResult, Roll
+from roll_manager import RollManager
 from window_layout import build_layout
 from ui_settings import UISettings
 import character_traits
@@ -38,8 +39,8 @@ class MainWindow:
         self.roll_result_messages = Messages()
         self.character=None
         self.layout = build_layout(
-            preset_values=self.roll_presets.get_rolls(roll_type="custom"),
-            history_values=self.roll_history.get_rolls(),
+            preset_values=self.roll_presets.get_rolls_by_type(roll_type="custom"),
+            history_values=self.roll_history.get_rolls_by_type(),
         )
 
         self.window = sg.Window('Dice Roller Application', self.layout, finalize=True)
@@ -229,7 +230,7 @@ class MainWindow:
         :return: None
         """
         roll_type = self.get_preset_selection()
-        self.window['roll_preset'].update(values=self.roll_presets.get_rolls(roll_type=roll_type))
+        self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type(roll_type=roll_type))
         self.window['roll_preset'].update(set_to_index=[])  # clear selection so you don’t load stale preset
 
     def get_advantage_selection(self):
@@ -310,7 +311,7 @@ class MainWindow:
         :return: None
         """
         self.roll_history.add_roll(roll_result)
-        self.window['roll_history'].update(values=self.roll_history.get_rolls())
+        self.window['roll_history'].update(values=self.roll_history.get_rolls_by_type())
 
     def clear_roll_history(self):
         """
@@ -323,7 +324,7 @@ class MainWindow:
         :return: None
         """
         self.roll_history.clear()
-        self.window['roll_history'].update(values=self.roll_history.get_rolls())
+        self.window['roll_history'].update(values=self.roll_history.get_rolls_by_type())
 
         self.window['status_bar'].update(f'Roll History Cleared')
 
@@ -368,7 +369,7 @@ class MainWindow:
             return
 
         # Check if preset already exists
-        if preset_name in self.roll_presets.get_rolls():
+        if preset_name in self.roll_presets.get_rolls_by_type():
            sg.popup_ok('Preset already exists. Please choose a different name.')
 
         roll = Roll(num_dice=self.window['dice_count'].get(),
@@ -382,7 +383,7 @@ class MainWindow:
         self.roll_presets.load_from_file('presets.json')
         self.window['status_bar'].update(f'Preset {roll.name} Added Successfully')
 
-        self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
+        self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type())
 
     def edit_preset(self, roll):
         """
@@ -407,7 +408,7 @@ class MainWindow:
             self.roll_presets.update_roll(roll, index)
             self.roll_presets.save_to_file('presets.json')
             self.roll_presets.load_from_file('presets.json')
-            self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
+            self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type())
             self.set_character_default_presets()
             self.window['status_bar'].update(f'Preset {roll.name} Updated Successfully')
         else:
@@ -435,7 +436,7 @@ class MainWindow:
                 self.roll_presets.remove_roll(index)
                 self.roll_presets.save_to_file('presets.json')
                 self.roll_presets.load_from_file('presets.json')
-                self.window['roll_preset'].update(values=self.roll_presets.get_rolls())
+                self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type())
                 self.set_character_default_presets()
                 self.window['status_bar'].update(f'Preset {roll.name} Removed Successfully')
         else:
