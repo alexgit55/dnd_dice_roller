@@ -6,7 +6,6 @@ from roll import RollResult, Roll
 from roll_manager import RollManager
 from window_layout import build_layout
 from ui_settings import UISettings
-import character_traits
 from character_store import CharacterStore
 
 
@@ -30,20 +29,23 @@ class MainWindow:
     :ivar window: Main GUI window for the dice rolling application.
     :type window: sg.Window
     """
-    def __init__(self):
+    def __init__(self, character):
         self.roller = DiceRoller()
         sg.theme('DarkGrey15')
         self.roll_history = RollManager()
         self.roll_presets = RollManager()
-        self.roll_presets.load_from_file('presets.json')
+        self.character=character
+        self.roll_presets.load_from_file()
+        self.add_character_default_presets()
         self.roll_result_messages = Messages()
-        self.character=None
         self.layout = build_layout(
-            preset_values=self.roll_presets.get_rolls_by_type(roll_type="custom"),
+            preset_values=self.roll_presets.get_rolls_by_character(self.character.character_id),
             history_values=self.roll_history.get_rolls_by_type(),
         )
-
         self.window = sg.Window('Dice Roller Application', self.layout, finalize=True)
+
+        text_intro = f"Currently Loaded Character: {self.character.name}"
+        self.window['character_name'].update(value=text_intro)
 
     def run(self):
         """
@@ -123,115 +125,6 @@ class MainWindow:
             dice_total = self.roller.total_roll()
             roll_result = RollResult(num_dice, dice_type, dice_total[0], dice_modifier, dice_total[1])
             self.update_results(roll_result)
-
-    def load_character(self, character):
-        self.character=character
-        self.set_character_default_presets()
-        text_intro=f"Currently Loaded Character: {self.character.name}"
-        self.window['character_name'].update(value=text_intro)
-
-    def set_character_default_presets(self):
-        num_dice=1
-        dice_type='d20'
-        for name, ability in character_traits.Skills.ability_map.items():
-            skill_name=name
-            roll_type="skill"
-            dice_modifier=self.character.get_check_modifier(
-                check=skill_name,
-                check_type=roll_type,
-            )
-            if self.character.skills.has_advantage(skill_name):
-                advantage="advantage_roll"
-            elif self.character.skills.has_disadvantage(skill_name):
-                advantage="disadvantage_roll"
-            else:
-                advantage="normal_roll"
-            roll=Roll(
-                num_dice=num_dice,
-                dice_type=dice_type,
-                dice_modifier=dice_modifier,
-                advantage=advantage,
-                name=skill_name,
-                roll_type=roll_type,
-            )
-            self.roll_presets.add_roll(roll)
-
-        for name, ability in character_traits.SavingThrows.ability_map.items():
-            save_name=name
-            roll_type = "save"
-            dice_modifier = self.character.get_check_modifier(
-                check=save_name,
-                check_type=roll_type,
-            )
-            if self.character.saving_throws.has_advantage(save_name):
-                advantage="advantage_roll"
-            elif self.character.saving_throws.has_disadvantage(save_name):
-                advantage="disadvantage_roll"
-            else:
-                advantage="normal_roll"
-            roll=Roll(
-                num_dice=num_dice,
-                dice_type=dice_type,
-                dice_modifier=dice_modifier,
-                advantage=advantage,
-                name=save_name,
-                roll_type=roll_type,
-            )
-            self.roll_presets.add_roll(roll)
-
-        for name in ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]:
-            ability=name
-            roll_type="ability"
-            dice_modifier = self.character.get_check_modifier(
-                check=ability,
-                check_type=roll_type,
-            )
-            advantage = "normal_roll"
-            roll=Roll(
-                num_dice=num_dice,
-                dice_type=dice_type,
-                dice_modifier=dice_modifier,
-                advantage=advantage,
-                name=ability,
-                roll_type=roll_type,
-            )
-            self.roll_presets.add_roll(roll)
-
-
-    def get_preset_selection(self):
-        """
-        Determines the type of preset selected by the user from the provided GUI window.
-
-        This method evaluates the state of specific GUI elements to decide which preset type
-        is currently selected. If none of the predefined preset types are active, it defaults
-        to returning 'custom'.
-
-        :return: A string representing the selected preset type. Possible values are:
-         'skill', 'save', 'ability', or 'custom'.
-        :rtype: str
-        """
-        if self.window['skill_presets'].get():
-            return 'skill'
-        elif self.window['save_presets'].get():
-            return 'save'
-        elif self.window['ability_presets'].get():
-            return 'ability'
-        return 'custom'
-
-    def refresh_roll_presets_list(self):
-        """
-        Refreshes the roll presets dropdown list in the user interface based on the selected roll type.
-
-        This method retrieves the currently selected roll type from the preset selection, fetches the associated
-        list of roll presets, and updates the dropdown widget in the user interface with this new list. It also
-        clears any previous selection to ensure stale presets are not used inadvertently.
-
-        :raises KeyError: If the required key for updating the user interface is not found.
-        :return: None
-        """
-        roll_type = self.get_preset_selection()
-        self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type(roll_type=roll_type))
-        self.window['roll_preset'].update(set_to_index=[])  # clear selection so you don’t load stale preset
 
     def get_advantage_selection(self):
         """
@@ -352,6 +245,53 @@ class MainWindow:
 
         self.window['status_bar'].update(f'Default Settings Restored')
 
+    def add_character_default_presets(self):
+        for roll in self.character.default_presets.rolls:
+            self.roll_presets.add_roll(roll)
+
+    def get_preset_selection(self):
+        """
+        Determines the type of preset selected by the user from the provided GUI window.
+
+        This method evaluates the state of specific GUI elements to decide which preset type
+        is currently selected. If none of the predefined preset types are active, it defaults
+        to returning 'custom'.
+
+        :return: A string representing the selected preset type. Possible values are:
+         'skill', 'save', 'ability', or 'custom'.
+        :rtype: str
+        """
+        if self.window['skill_presets'].get():
+            return 'skill'
+        elif self.window['save_presets'].get():
+            return 'save'
+        elif self.window['ability_presets'].get():
+            return 'ability'
+        return 'custom'
+
+    def refresh_roll_presets_list(self):
+        """
+        Refreshes the roll presets dropdown list in the user interface based on the selected roll type.
+
+        This method retrieves the currently selected roll type from the preset selection, fetches the associated
+        list of roll presets, and updates the dropdown widget in the user interface with this new list. It also
+        clears any previous selection to ensure stale presets are not used inadvertently.
+
+        :raises KeyError: If the required key for updating the user interface is not found.
+        :return: None
+        """
+        roll_type = self.get_preset_selection()
+        if roll_type == 'custom':
+            # Enable the edit/remove preset buttons
+            self.window['edit_preset'].update(disabled=False)
+            self.window['remove_preset'].update(disabled=False)
+        else:
+            self.window['edit_preset'].update(disabled=True)
+            self.window['remove_preset'].update(disabled=True)
+
+        self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type(roll_type=roll_type))
+        self.window['roll_preset'].update(set_to_index=[])  # clear selection so you don’t load stale preset
+
     def save_preset(self):
         """
         Prompts the user to save a roll configuration as a preset, ensuring the preset
@@ -377,10 +317,12 @@ class MainWindow:
                     dice_modifier=self.window['dice_modifier'].get(),
                     advantage=self.get_advantage_selection(),
                     name=preset_name,
-                    roll_type="custom")
+                    roll_type="custom",
+                    character_id=self.character.character_id)
         self.roll_presets.add_roll(roll)
-        self.roll_presets.save_to_file('presets.json')
-        self.roll_presets.load_from_file('presets.json')
+        self.roll_presets.save_to_file()
+        self.roll_presets.load_from_file()
+        self.add_character_default_presets()
         self.window['status_bar'].update(f'Preset {roll.name} Added Successfully')
 
         self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type())
@@ -406,10 +348,10 @@ class MainWindow:
             roll.dice_modifier = self.window['dice_modifier'].get()
             index = self.roll_presets.get_roll_index(roll)
             self.roll_presets.update_roll(roll, index)
-            self.roll_presets.save_to_file('presets.json')
-            self.roll_presets.load_from_file('presets.json')
+            self.roll_presets.save_to_file()
+            self.roll_presets.load_from_file()
             self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type())
-            self.set_character_default_presets()
+            self.add_character_default_presets()
             self.window['status_bar'].update(f'Preset {roll.name} Updated Successfully')
         else:
             sg.popup_ok('Cannot edit built-in presets.')
@@ -434,10 +376,10 @@ class MainWindow:
             if confirmation == 'Yes':
                 index = self.roll_presets.get_roll_index(roll)
                 self.roll_presets.remove_roll(index)
-                self.roll_presets.save_to_file('presets.json')
-                self.roll_presets.load_from_file('presets.json')
+                self.roll_presets.save_to_file()
+                self.roll_presets.load_from_file()
                 self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type())
-                self.set_character_default_presets()
+                self.add_character_default_presets()
                 self.window['status_bar'].update(f'Preset {roll.name} Removed Successfully')
         else:
             sg.popup_ok('Cannot remove built-in presets.')
@@ -465,6 +407,5 @@ if __name__ == '__main__':
     character_list.load_characters()
 
     UISettings.apply_theme()
-    window = MainWindow()
-    window.load_character(character_list.get_character("Warryn"))
+    window = MainWindow(character_list.get_character("Warryn"))
     window.run()

@@ -25,15 +25,14 @@ class Roll:
     """
     def __init__(self, num_dice, dice_type, dice_modifier,
                  name='', advantage='normal_roll', roll_type='custom',
-                 **kwargs):
+                 character_id=None, **kwargs):
         self.name = name
         self.num_dice = num_dice
         self.dice_type = dice_type
         self.dice_modifier = dice_modifier
         self.advantage = advantage
         self.roll_type=roll_type
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+        self.character_id=character_id
 
     def __repr__(self):
         if self.dice_modifier >=0:

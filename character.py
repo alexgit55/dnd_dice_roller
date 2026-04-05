@@ -3,6 +3,8 @@
 # This class will save character information and manage dice rolls
 
 from character_traits import SavingThrows, Skills
+from roll_manager import RollManager
+from roll import Roll
 
 
 class Character:
@@ -39,9 +41,59 @@ class Character:
         self.save_bonus = save_bonus
         self.skills = Skills()
         self.saving_throws = SavingThrows()
+        self.default_presets=RollManager()
+        self.load_default_presets()
 
     def __repr__(self):
         return f"Character(name={self.name}, character_id={self.character_id})"
+
+    def check_advantage(self, check_name, check_type="skill"):
+        if check_type == "skill":
+            return self.skills.has_advantage(check_name)
+        elif check_type == "save":
+            return self.saving_throws.has_advantage(check_name)
+        else:
+            return False
+
+    def check_disadvantage(self, check_name, check_type="skill"):
+        if check_type == "skill":
+            return self.skills.has_disadvantage(check_name)
+        elif check_type == "save":
+            return self.saving_throws.has_disadvantage(check_name)
+        else:
+            return False
+
+    def load_default_presets(self):
+        skills_list = Skills.ability_map.keys()
+        saves_list = SavingThrows.ability_map.keys()
+        ability_list = ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]
+
+        preset_list= {"skill": skills_list, "save": saves_list, "ability": ability_list}
+
+        num_dice = 1
+        dice_type = 'd20'
+
+        for roll_type, preset_list in preset_list.items():
+            for name in preset_list:
+                dice_modifier = self.get_check_modifier(
+                    check=name,
+                    check_type=roll_type,
+                )
+                if self.check_advantage(roll_type, name):
+                    advantage = "advantage_roll"
+                elif self.check_disadvantage(roll_type, name):
+                    advantage = "disadvantage_roll"
+                else:
+                    advantage = "normal_roll"
+                roll = Roll(
+                    num_dice=num_dice,
+                    dice_type=dice_type,
+                    dice_modifier=dice_modifier,
+                    advantage=advantage,
+                    name=name,
+                    roll_type=roll_type
+                )
+                self.default_presets.add_roll(roll)
 
     def to_dict(self):
         return {
