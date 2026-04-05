@@ -64,24 +64,26 @@ class Character:
             return False
 
     def load_default_presets(self):
+        self.default_presets.clear()
+
         skills_list = Skills.ability_map.keys()
         saves_list = SavingThrows.ability_map.keys()
         ability_list = ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]
 
-        preset_list= {"skill": skills_list, "save": saves_list, "ability": ability_list}
+        check_lists= {"skill": skills_list, "save": saves_list, "ability": ability_list}
 
         num_dice = 1
         dice_type = 'd20'
 
-        for roll_type, preset_list in preset_list.items():
-            for name in preset_list:
+        for roll_type, check_list in check_lists.items():
+            for name in check_list:
                 dice_modifier = self.get_check_modifier(
                     check=name,
                     check_type=roll_type,
                 )
-                if self.check_advantage(roll_type, name):
+                if self.check_advantage(check_name=name, check_type=roll_type):
                     advantage = "advantage_roll"
-                elif self.check_disadvantage(roll_type, name):
+                elif self.check_disadvantage(check_name=name, check_type=roll_type):
                     advantage = "disadvantage_roll"
                 else:
                     advantage = "normal_roll"
@@ -134,6 +136,8 @@ class Character:
         character.saving_throws.set_advantages(saves_data.get("advantages", []))
         character.saving_throws.set_disadvantages(saves_data.get("disadvantages", []))
 
+        character.load_default_presets()
+
         return character
 
     def set_ability_score(self, ability, score):
@@ -183,11 +187,15 @@ class Character:
 
 # Example usage
 if __name__ == "__main__":
-    John = Character(name="John", proficiency_bonus=4)
+    John = Character(name="John", proficiency_bonus=4, character_id="2")
     John.saving_throws.set_proficiencies(["Strength", "Constitution"])
     John.skills.set_proficiencies(
         ["Animal Handling", "Athletics", "Intimidation", "Perception", "Survival"]
     )
+    John.skills.set_advantages(["Deception", "Sleight of Hand"])
+    John.saving_throws.set_advantages(["Dexterity", "Intelligence", "Wisdom", "Charisma"])
+    John.saving_throws.set_disadvantages([])
+    John.skills.set_disadvantages(["Stealth"])
     John.set_ability_score("Strength", 19)
     John.set_ability_score("Dexterity", 14)
     John.set_ability_score("Constitution", 18)
@@ -198,3 +206,8 @@ if __name__ == "__main__":
     print(f"Character Name: {John.name}")
     print(f"Strength Modifier: {John.calculate_ability_modifier('Strength')}")
     print(f"Proficiency Bonus: {John.proficiency_bonus}")
+
+    #John.load_default_presets()
+
+    for preset in John.default_presets.rolls:
+        print(preset)

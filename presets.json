@@ -52,14 +52,5 @@
         "advantage": "normal_roll",
         "roll_type": "custom",
         "character_id": "c-001"
-    },
-    {
-        "name": "testing",
-        "num_dice": 1,
-        "dice_type": "d20",
-        "dice_modifier": 2,
-        "advantage": "disadvantage_roll",
-        "roll_type": "custom",
-        "character_id": "c-001"
     }
 ]
