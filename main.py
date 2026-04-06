@@ -324,8 +324,8 @@ class MainWindow:
         self.roll_presets.load_from_file()
         self.add_character_default_presets()
         self.window['status_bar'].update(f'Preset {roll.name} Added Successfully')
-
         self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type())
+        self.refresh_roll_presets_list()
 
     def edit_preset(self, roll):
         """
