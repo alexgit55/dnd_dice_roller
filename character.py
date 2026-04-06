@@ -48,6 +48,19 @@ class Character:
         return f"Character(name={self.name}, character_id={self.character_id})"
 
     def check_advantage(self, check_name, check_type="skill"):
+        """
+        Checks if there is an advantage for a given check based on the type of check provided. The `check_name`
+        specifies the name of the check, and the `check_type` determines whether it is a "skill" or "save"
+        check. Defaults to "skill" if `check_type` is not provided. Returns whether the advantage exists for
+        the specified check.
+
+        :param check_name: Name of the check to determine if it has an advantage.
+        :type check_name: str
+        :param check_type: Type of check to evaluate, either "skill" or "save". Default is "skill".
+        :type check_type: str
+        :return: True if the check has an advantage, otherwise False.
+        :rtype: bool
+        """
         if check_type == "skill":
             return self.skills.has_advantage(check_name)
         elif check_type == "save":
@@ -56,6 +69,20 @@ class Character:
             return False
 
     def check_disadvantage(self, check_name, check_type="skill"):
+        """
+        Checks whether a specific skill or saving throw has a disadvantage. This function
+        validates the presence of a disadvantage for the provided check and returns a boolean
+        result accordingly. The type of check to evaluate can either be a "skill" or a "save."
+        If an invalid check type is provided, it defaults to returning False.
+
+        :param check_name: The name of the skill or saving throw to check for a disadvantage.
+            It is expected to be a string compatible with the specification of the underlying
+            skill or saving throw datasets.
+        :param check_type: The type of check to evaluate, either "skill" or "save". Defaults
+            to "skill" when no type is provided.
+        :return: A boolean value indicating if the specified check (skill or saving throw)
+            has a disadvantage. Returns True if a disadvantage exists, otherwise False.
+        """
         if check_type == "skill":
             return self.skills.has_disadvantage(check_name)
         elif check_type == "save":
@@ -64,6 +91,19 @@ class Character:
             return False
 
     def load_default_presets(self):
+        """
+        Loads the default presets required for various checks such as skills, saving
+        throws, and ability scores. This method prepares a complete set of roll
+        configurations based on predefined abilities, skill checks, and saving throws,
+        including modifiers and advantage/disadvantage rules.
+
+        The method iterates through different check types (skills, saves, abilities),
+        retrieves corresponding modifiers, and determines the type of roll advantage
+        or disadvantage. Each configuration is encapsulated as a Roll object and
+        added to the `default_presets`.
+
+        :return: None
+        """
         self.default_presets.clear()
 
         skills_list = Skills.ability_map.keys()
@@ -98,6 +138,16 @@ class Character:
                 self.default_presets.add_roll(roll)
 
     def to_dict(self):
+        """
+        Converts the object instance into a dictionary representation. This includes several
+        fields and nested structures encapsulating character details, such as ability scores,
+        skills, and saving throws information.
+
+        :return: A dictionary containing the structured data of the object instance, with
+                 nested dictionaries for skills and saving throws detailing proficiencies,
+                 advantages, and disadvantages.
+        :rtype: dict
+        """
         return {
             "character_id": self.character_id,
             "name": self.name,
@@ -118,6 +168,19 @@ class Character:
 
     @classmethod
     def from_dict(cls, data):
+        """
+        Creates an instance of the class from a dictionary containing its attributes.
+
+        The method parses the provided dictionary and populates the class instance with the parsed
+        attributes and nested data for skills and saving throws. Defaults are used for attributes
+        if not explicitly provided in the dictionary. Once the instance is initialized, default
+        presets are loaded.
+
+        :param data: The dictionary containing the data to initialize the class instance.
+        :type data: dict
+        :return: An instance of the class populated with data from the dictionary.
+        :rtype: cls
+        """
         character = cls(
             character_id=data["character_id"],
             name=data["name"],

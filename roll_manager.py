@@ -46,6 +46,18 @@ class RollManager:
             return [roll for roll in self.rolls if roll.roll_type == roll_type]
 
     def get_rolls_by_character(self, character_id):
+        """
+        Retrieve all rolls associated with a given character.
+
+        This method iterates through a collection of rolls and filters those that belong
+        to the character specified by the given character ID.
+
+        :param character_id: The unique identifier of the character whose rolls need to
+            be retrieved.
+        :return: A list of rolls associated with the character matching the provided
+            character ID. Each roll represents an instance tied to the character.
+        :rtype: list
+        """
         return [roll for roll in self.rolls if roll.character_id == character_id]
 
     def get_roll(self, index):
