@@ -1,5 +1,5 @@
 import json
-from roll import Roll
+from domain.roll import Roll
 
 class RollManager:
     """
@@ -135,7 +135,7 @@ class RollManager:
     def __len__(self):
         return len(self.rolls)
 
-    def save_to_file(self, filename='presets.json'):
+    def save_to_file(self, filename='data/presets.json'):
         """
         Saves the current rolls data to a specified JSON file. The rolls are
         encoded using the `encode_roll` method of the `Roll` class, and the
@@ -150,7 +150,7 @@ class RollManager:
         with open(f'{filename}', 'w', encoding='utf-8') as f:
             json.dump(data_to_write, f, indent=4)
 
-    def load_from_file(self, filename='presets.json'):
+    def load_from_file(self, filename='data/presets.json'):
         """
         Loads roll data from a specified JSON file and populates the current instance with the
         deserialized roll information.

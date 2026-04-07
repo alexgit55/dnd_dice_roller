@@ -19,7 +19,7 @@ pip-wheel-metadata/
 venv/
 ENV/
 env/
-.env
+data/.env
 
 # Installer logs
 pip-log.txt

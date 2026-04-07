@@ -1,7 +1,7 @@
 import FreeSimpleGUI as sg
 
-from dice import Die
-from ui_settings import UISettings
+from domain.dice import Die
+from ui.ui_settings import UISettings
 
 
 def build_layout(*, preset_values, history_values):

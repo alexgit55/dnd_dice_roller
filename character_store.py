@@ -1,5 +1,5 @@
 import json
-from character import Character
+from domain.character import Character
 
 class CharacterStore:
     """
@@ -14,7 +14,7 @@ class CharacterStore:
     :ivar characters: A list containing the Character objects.
     :type characters: List[Character]
     """
-    def __init__(self, filename='characters.json'):
+    def __init__(self, filename='data/characters.json'):
         self.filename = filename
         self.characters = []
 

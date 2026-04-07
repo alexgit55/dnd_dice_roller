@@ -2,9 +2,9 @@
 
 # This class will save character information and manage dice rolls
 
-from character_traits import SavingThrows, Skills
-from roll_manager import RollManager
-from roll import Roll
+from domain.character_traits import SavingThrows, Skills
+from domain.roll_manager import RollManager
+from domain.roll import Roll
 
 
 class Character:
