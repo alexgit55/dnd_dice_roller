@@ -1,10 +1,10 @@
 import FreeSimpleGUI as sg
 
-from domain.dice import Die, DiceRoller
 from domain.messages import Messages
 from domain.roll import RollResult, Roll
 from domain.roll_manager import RollManager
 from ui.window_layout import build_layout
+from domain.services.dice_roll_service import DiceRollService
 
 class MainWindow:
     """
@@ -15,8 +15,6 @@ class MainWindow:
     application supports normal rolls, advantage/disadvantage rolls, and includes
     options to save, load, and edit roll presets.
 
-    :ivar roller: Utility object to manage dice rolling logic.
-    :type roller: DiceRoller
     :ivar roll_history: Manager for storing and retrieving the history of dice rolls.
     :type roll_history: RollManager
     :ivar roll_presets: Manager for handling save/load functionality of roll presets.
@@ -27,7 +25,7 @@ class MainWindow:
     :type window: sg.Window
     """
     def __init__(self, character):
-        self.roller = DiceRoller()
+        self.dice_roll_service = DiceRollService()
         sg.theme('DarkGrey15')
         self.roll_history = RollManager()
         self.roll_presets = RollManager()
@@ -63,7 +61,7 @@ class MainWindow:
                     current_preset = None
                     self.refresh_roll_presets_list()
                 case 'roll':
-                    self.roll_dice()
+                    self.get_dice_roll()
                 case 'reset':
                     self.reset_to_default()
                 case 'clear_history':
@@ -91,37 +89,21 @@ class MainWindow:
 
         self.window.close()
 
-    def roll_dice(self):
+    def get_dice_roll(self):
         """
-        Rolls dice based on user input and updates the roll results accordingly.
+        Calculates the result of rolling dice based on the specified parameters, updates the
+        results, and handles any advantage mode logic. This function retrieves the number of
+        dice, dice modifier, and dice type from the application window, processes the required
+        roll, and displays the roll results.
 
-        This method processes the dice rolling logic. Depending on the user's selected
-        dice type, the number of dice, and any modifiers, it calculates the outcomes of
-        the rolls, considers cases like advantage roll for a single d20, and updates
-        the results through the corresponding method.
-
-        :raises ValueError: Raised if the input values for the dice count or modifier
-            cannot be parsed as integers.
-        :raises AttributeError: Raised if required attributes from the user interface
-            (e.g., `dice_count`, `dice_modifier`, or `dice_type`) are not properly defined.
-
-        :return: None
+        :rtype: None
         """
-        self.roller.clear_dice()
         num_dice=int(self.window['dice_count'].get())
         dice_modifier=int(self.window['dice_modifier'].get())
         dice_type = self.window['dice_type'].get()
-        if dice_type == 'd20' and num_dice == 1:
-            rolls=self.get_advantage_roll()
-            dice_total=rolls[1]
-            roll_result = RollResult(num_dice, dice_type, rolls, dice_modifier, dice_total)
-            self.update_results(roll_result)
-        else:
-            for _ in range(num_dice):
-                self.roller.add_dice(Die(dice_type))
-            dice_total = self.roller.total_roll()
-            roll_result = RollResult(num_dice, dice_type, dice_total[0], dice_modifier, dice_total[1])
-            self.update_results(roll_result)
+        advantage_mode=self.get_advantage_selection()[0]
+        dice_roll=self.dice_roll_service.roll_dice(num_dice, dice_type, dice_modifier, advantage_mode)
+        self.update_results(dice_roll)
 
     def get_advantage_selection(self):
         """
@@ -137,29 +119,10 @@ class MainWindow:
         :rtype: str
         """
         if self.window['advantage_roll'].get():
-            return 'advantage_roll'
+            return 1, 'advantage_roll'
         elif self.window['disadvantage_roll'].get():
-            return 'disadvantage_roll'
-        return 'normal_roll'
-
-    def get_advantage_roll(self):
-        """
-        Computes and returns a dice roll based on the current advantage or disadvantage settings.
-
-        The method evaluates whether an advantage or disadvantage roll should be performed based on
-        flags in the `window` attribute. It executes a dice roll using the `roller` object and returns
-        the result based on the settings. If neither advantage nor disadvantage is selected, a regular
-        roll is executed.
-
-        :return: The result of the dice roll. The roll may include an advantage, a disadvantage, or
-            be a regular roll depending on the current state.
-        :rtype: int
-        """
-        if self.window['advantage_roll'].get():
-            return self.roller.d20_roll(advantage=1)
-        elif self.window['disadvantage_roll'].get():
-            return self.roller.d20_roll(advantage=2)
-        return self.roller.d20_roll()
+            return 2, 'disadvantage_roll'
+        return 3, 'normal_roll'
 
     def update_results(self, roll_result: RollResult):
         """
@@ -339,7 +302,7 @@ class MainWindow:
             preset_name = sg.popup_get_text('Enter a name for the preset:',
                                             default_text=roll.name)
             roll.name = preset_name
-            roll.advantage = self.get_advantage_selection()
+            roll.advantage = self.get_advantage_selection()[1]
             roll.num_dice = self.window['dice_count'].get()
             roll.dice_type = self.window['dice_type'].get()
             roll.dice_modifier = self.window['dice_modifier'].get()
