@@ -4,7 +4,7 @@ from domain.messages import Messages
 from domain.roll import RollResult, Roll
 from domain.roll_manager import RollManager
 from ui.window_layout import build_layout
-from domain.services.dice_roll_service import DiceRollService
+import application.dice_roll_app_controller as Controller
 
 class MainWindow:
     """
@@ -25,7 +25,7 @@ class MainWindow:
     :type window: sg.Window
     """
     def __init__(self, character):
-        self.dice_roll_service = DiceRollService()
+        self.dice_roll_app_controller = Controller.DiceRollAppController()
         sg.theme('DarkGrey15')
         self.roll_history = RollManager()
         self.roll_presets = RollManager()
@@ -102,7 +102,9 @@ class MainWindow:
         dice_modifier=int(self.window['dice_modifier'].get())
         dice_type = self.window['dice_type'].get()
         advantage_mode=self.get_advantage_selection()[0]
-        dice_roll=self.dice_roll_service.roll_dice(num_dice, dice_type, dice_modifier, advantage_mode)
+        dice_roll=(self.dice_roll_app_controller.
+                   dice_roll_service.
+                   roll_dice(num_dice, dice_type, dice_modifier, advantage_mode))
         self.update_results(dice_roll)
 
     def get_advantage_selection(self):

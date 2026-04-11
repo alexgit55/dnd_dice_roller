@@ -1,4 +1,5 @@
-
+from domain.services.dice_roll_service import DiceRollService
 
 class DiceRollAppController:
-    pass
+    def __init__(self):
+        self.dice_roll_service = DiceRollService()
