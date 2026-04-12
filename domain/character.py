@@ -3,7 +3,7 @@
 # This class will save character information and manage dice rolls
 
 from domain.character_traits import SavingThrows, Skills
-from domain.roll_manager import RollManager
+from domain.roll_history import RollHistory
 from domain.roll import Roll
 
 
@@ -41,7 +41,7 @@ class Character:
         self.save_bonus = save_bonus
         self.skills = Skills()
         self.saving_throws = SavingThrows()
-        self.default_presets=RollManager()
+        self.default_presets=RollHistory()
         self.load_default_presets()
 
     def __repr__(self):
