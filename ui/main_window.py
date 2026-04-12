@@ -4,7 +4,7 @@ from domain.messages import Messages
 from domain.roll import RollResult, Roll
 from domain.roll_manager import RollManager
 from ui.window_layout import build_layout
-import application.dice_roll_app_controller as Controller
+import application.dice_roll_app_controller as controller
 
 class MainWindow:
     """
@@ -17,24 +17,25 @@ class MainWindow:
 
     :ivar roll_history: Manager for storing and retrieving the history of dice rolls.
     :type roll_history: RollManager
-    :ivar roll_presets: Manager for handling save/load functionality of roll presets.
-    :type roll_presets: RollManager
     :ivar layout: Defines the layout structure of the GUI components.
     :type layout: list
     :ivar window: Main GUI window for the dice rolling application.
     :type window: sg.Window
     """
     def __init__(self, character):
-        self.dice_roll_app_controller = Controller.DiceRollAppController()
+        self.dice_roll_app_controller = controller.DiceRollAppController()
         sg.theme('DarkGrey15')
         self.roll_history = RollManager()
-        self.roll_presets = RollManager()
         self.character=character
-        self.roll_presets.load_from_file()
-        self.add_character_default_presets()
+        (self.dice_roll_app_controller.
+            preset_service.load_from_file())
+        (self.dice_roll_app_controller.
+            preset_service.add_character_default_presets(self.character))
         self.roll_result_messages = Messages()
         self.layout = build_layout(
-            preset_values=self.roll_presets.get_rolls_by_character(self.character.character_id),
+            preset_values=self.dice_roll_app_controller.
+                preset_service.
+                get_presets_by_character(self.character.character_id),
             history_values=self.roll_history.get_rolls_by_type(),
         )
         self.window = sg.Window('Dice Roller Application', self.layout, finalize=True)
@@ -207,10 +208,6 @@ class MainWindow:
 
         self.window['status_bar'].update(f'Default Settings Restored')
 
-    def add_character_default_presets(self):
-        for roll in self.character.default_presets.rolls:
-            self.roll_presets.add_roll(roll)
-
     def get_preset_selection(self):
         """
         Determines the type of preset selected by the user from the provided GUI window.
@@ -251,7 +248,9 @@ class MainWindow:
             self.window['edit_preset'].update(disabled=True)
             self.window['remove_preset'].update(disabled=True)
 
-        self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type(roll_type=roll_type))
+        self.window['roll_preset'].update(values=self.dice_roll_app_controller.
+                                          preset_service.
+                                          get_presets_by_type(roll_type=roll_type))
         self.window['roll_preset'].update(set_to_index=[])  # clear selection so you don’t load stale preset
 
     def save_preset(self):
@@ -271,7 +270,7 @@ class MainWindow:
             return
 
         # Check if preset already exists
-        if preset_name in self.roll_presets.get_rolls_by_type():
+        if preset_name in self.dice_roll_app_controller.preset_service.presets.get_rolls_by_type():
            sg.popup_ok('Preset already exists. Please choose a different name.')
 
         roll = Roll(num_dice=self.window['dice_count'].get(),
@@ -281,12 +280,14 @@ class MainWindow:
                     name=preset_name,
                     roll_type="custom",
                     character_id=self.character.character_id)
-        self.roll_presets.add_roll(roll)
-        self.roll_presets.save_to_file()
-        self.roll_presets.load_from_file()
-        self.add_character_default_presets()
+        self.dice_roll_app_controller.preset_service.add_preset(roll)
+        self.dice_roll_app_controller.preset_service.save_to_file()
+        self.dice_roll_app_controller.preset_service.load_from_file()
+        (self.dice_roll_app_controller.
+         preset_service.add_character_default_presets(self.character))
         self.window['status_bar'].update(f'Preset {roll.name} Added Successfully')
-        self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type())
+        self.window['roll_preset'].update(values=self.dice_roll_app_controller.
+                                          preset_service.get_rolls_by_type())
         self.refresh_roll_presets_list()
 
     def edit_preset(self, roll):
@@ -308,12 +309,14 @@ class MainWindow:
             roll.num_dice = self.window['dice_count'].get()
             roll.dice_type = self.window['dice_type'].get()
             roll.dice_modifier = self.window['dice_modifier'].get()
-            index = self.roll_presets.get_roll_index(roll)
-            self.roll_presets.update_roll(roll, index)
-            self.roll_presets.save_to_file()
-            self.roll_presets.load_from_file()
-            self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type())
-            self.add_character_default_presets()
+            index = self.dice_roll_app_controller.preset_service.get_preset_index(roll)
+            self.dice_roll_app_controller.preset_service.update_preset(roll, index)
+            self.dice_roll_app_controller.preset_service.save_to_file()
+            self.dice_roll_app_controller.preset_service.load_from_file()
+            self.window['roll_preset'].update(values=self.dice_roll_app_controller.
+                                              preset_service.get_rolls_by_type())
+            (self.dice_roll_app_controller.
+             preset_service.add_character_default_presets(self.character))
             self.window['status_bar'].update(f'Preset {roll.name} Updated Successfully')
         else:
             sg.popup_ok('Cannot edit built-in presets.')
@@ -336,12 +339,14 @@ class MainWindow:
         if roll.roll_type == 'custom':
             confirmation = sg.popup_yes_no(f'Are you sure you want to remove preset "{roll.name}"?')
             if confirmation == 'Yes':
-                index = self.roll_presets.get_roll_index(roll)
-                self.roll_presets.remove_roll(index)
-                self.roll_presets.save_to_file()
-                self.roll_presets.load_from_file()
-                self.window['roll_preset'].update(values=self.roll_presets.get_rolls_by_type())
-                self.add_character_default_presets()
+                index = self.dice_roll_app_controller.preset_service.get_roll_index(roll)
+                self.dice_roll_app_controller.preset_service.remove_preset(index)
+                self.dice_roll_app_controller.preset_service.save_to_file()
+                self.dice_roll_app_controller.preset_service.load_from_file()
+                self.window['roll_preset'].update(values=self.dice_roll_app_controller.
+                                                  preset_service.get_rolls_by_type())
+                (self.dice_roll_app_controller.
+                 preset_service.add_character_default_presets(self.character))
                 self.window['status_bar'].update(f'Preset {roll.name} Removed Successfully')
         else:
             sg.popup_ok('Cannot remove built-in presets.')
