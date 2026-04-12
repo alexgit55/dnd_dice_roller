@@ -2,9 +2,7 @@ import FreeSimpleGUI as sg
 
 from domain.messages import Messages
 from domain.roll import RollResult, Roll
-from domain.roll_history import RollHistory
 from ui.window_layout import build_layout
-import application.dice_roll_app_controller as controller
 
 class MainWindow:
     """

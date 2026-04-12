@@ -1,11 +1,11 @@
 
 from ui.ui_settings import UISettings
-from character_store import CharacterStore
+from storage.character_repository import CharacterRepository
 from ui.main_window import MainWindow
 from application.dice_roll_app_controller import DiceRollAppController
 
 if __name__ == '__main__':
-    character_list = CharacterStore()
+    character_list = CharacterRepository()
     character_list.load_characters()
     dice_roll_app_controller = DiceRollAppController()
 
