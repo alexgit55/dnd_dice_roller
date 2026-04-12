@@ -15,8 +15,6 @@ class MainWindow:
     application supports normal rolls, advantage/disadvantage rolls, and includes
     options to save, load, and edit roll presets.
 
-    :ivar roll_history: Manager for storing and retrieving the history of dice rolls.
-    :type roll_history: RollHistory
     :ivar layout: Defines the layout structure of the GUI components.
     :type layout: list
     :ivar window: Main GUI window for the dice rolling application.
@@ -25,7 +23,6 @@ class MainWindow:
     def __init__(self, character, dice_roll_app_controller):
         self.controller = dice_roll_app_controller
         sg.theme('DarkGrey15')
-        self.roll_history = RollHistory()
         self.character=character
         (self.controller.
             preset_service.load_from_file())
@@ -166,8 +163,8 @@ class MainWindow:
         :type roll_result: int
         :return: None
         """
-        self.roll_history.add_roll(roll_result)
-        self.window['roll_history'].update(values=self.roll_history.get_rolls_by_type())
+        self.controller.roll_history.add_roll(roll_result)
+        self.window['roll_history'].update(values=self.controller.roll_history.get_rolls_by_type())
 
     def clear_roll_history(self):
         """
@@ -179,8 +176,8 @@ class MainWindow:
 
         :return: None
         """
-        self.roll_history.clear()
-        self.window['roll_history'].update(values=self.roll_history.get_rolls_by_type())
+        self.controller.roll_history.clear()
+        self.window['roll_history'].update(values=self.controller.roll_history.get_rolls_by_type())
 
         self.window['status_bar'].update(f'Roll History Cleared')
 
