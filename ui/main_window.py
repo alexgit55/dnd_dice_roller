@@ -1,9 +1,9 @@
 import FreeSimpleGUI as sg
 
-from domain.messages import Messages
-from domain.roll import RollResult, Roll
+from domain.models.messages import Messages
+from domain.models.roll import RollResult, Roll
 from ui.window_layout import build_layout
-from domain.roll_history import RollHistory
+from domain.models.roll_history import RollHistory
 
 class MainWindow:
     """
@@ -274,7 +274,7 @@ class MainWindow:
         roll = Roll(num_dice=self.window['dice_count'].get(),
                     dice_type=self.window['dice_type'].get(),
                     dice_modifier=self.window['dice_modifier'].get(),
-                    advantage=self.get_advantage_selection(),
+                    advantage=self.get_advantage_selection()[1],
                     name=preset_name,
                     roll_type="custom",
                     character_id=self.character.character_id)

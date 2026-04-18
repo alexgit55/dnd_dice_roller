@@ -22,7 +22,7 @@ class Messages:
     :type client: genai.Client
     """
     def __init__(self):
-        load_dotenv('data/.env')
+        load_dotenv('.env')
         self.gemini_api_key = os.getenv("GEMINI_API_KEY")
         self.client = genai.Client(api_key=self.gemini_api_key)
         self.model = "gemini-2.5-flash"

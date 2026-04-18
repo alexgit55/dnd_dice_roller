@@ -36,14 +36,11 @@
         "character_id": "c-001"
     },
     {
-        "name": "Range",
+        "name": "Ranged",
         "num_dice": 1,
         "dice_type": "d20",
         "dice_modifier": 6,
-        "advantage": [
-            3,
-            "normal_roll"
-        ],
+        "advantage": "normal_roll",
         "roll_type": "custom",
         "character_id": "c-001"
     }

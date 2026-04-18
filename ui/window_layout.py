@@ -1,6 +1,6 @@
 import FreeSimpleGUI as sg
 
-from domain.dice import Die
+from domain.models.dice import Die
 from ui.ui_settings import UISettings
 
 

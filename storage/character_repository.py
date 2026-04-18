@@ -1,5 +1,5 @@
 import json
-from domain.character import Character
+from domain.models.character import Character
 
 class CharacterRepository:
     """

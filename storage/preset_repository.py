@@ -1,5 +1,5 @@
 import json
-from domain.roll import Roll
+from domain.models.roll import Roll
 
 class PresetRepository:
 

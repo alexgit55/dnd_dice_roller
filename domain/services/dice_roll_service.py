@@ -1,6 +1,6 @@
 
-from domain.roll import RollResult, Roll
-from domain.dice import Die, DiceRoller
+from domain.models.roll import RollResult
+from domain.models.dice import Die, DiceRoller
 
 class DiceRollService:
     def __init__(self):
