@@ -6,10 +6,14 @@ class DiceRollService:
     def __init__(self):
         self.roller = DiceRoller()
 
+    @staticmethod
+    def is_d20_roll(num_dice, dice_type):
+        return num_dice == 1 and dice_type == 'd20'
+
     def roll_dice(self, num_dice, dice_type, dice_modifier, advantage):
         self.roller.clear_dice()
 
-        if dice_type == 'd20' and num_dice == 1:
+        if DiceRollService.is_d20_roll(num_dice, dice_type):
             rolls = self.roller.d20_roll(advantage)
             dice_total = rolls[1]
             roll_result = RollResult(num_dice, dice_type, rolls, dice_modifier, dice_total)

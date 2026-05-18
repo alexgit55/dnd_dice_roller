@@ -28,6 +28,19 @@ def build_layout(*, preset_values, history_values):
                     key="character_name"),
         ],
         [
+            sg.Text("AI Messages: ",),
+            sg.Radio("On",
+                     "ai_messages",
+                     key="ai_on",
+                     default=True,
+                     enable_events=True, ),
+            sg.Radio("Off",
+                     "ai_messages",
+                     key="ai_off",
+                     default=False,
+                     enable_events=True, ),
+        ],
+        [
             sg.Frame(
                 "Roll Presets",
                 layout=[

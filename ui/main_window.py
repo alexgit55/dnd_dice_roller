@@ -101,10 +101,11 @@ class MainWindow:
         dice_modifier=int(self.window['dice_modifier'].get())
         dice_type = self.window['dice_type'].get()
         advantage_mode=self.get_advantage_selection()[0]
+        is_d20_roll=self.controller.dice_roll_service.is_d20_roll(num_dice, dice_type)
         dice_roll=(self.controller.
                    dice_roll_service.
                    roll_dice(num_dice, dice_type, dice_modifier, advantage_mode))
-        self.update_results(dice_roll)
+        self.update_results(dice_roll, is_d20_roll)
 
     def get_advantage_selection(self):
         """
@@ -120,12 +121,17 @@ class MainWindow:
         :rtype: str
         """
         if self.window['advantage_roll'].get():
-            return 1, 'advantage_roll'
+            return 1, 'advantage_roll', "Rolling with Advantage"
         elif self.window['disadvantage_roll'].get():
-            return 2, 'disadvantage_roll'
-        return 3, 'normal_roll'
+            return 2, 'disadvantage_roll', "Rolling with Disadvantage"
+        return 3, 'normal_roll', ""
 
-    def update_results(self, roll_result: RollResult):
+    def get_ai_selection(self):
+        if self.window['ai_on'].get():
+            return True
+        return False
+
+    def update_results(self, roll_result: RollResult, is_d20_roll: bool):
         """
         Updates the result displays and adjusts any relevant roll outcome details based on the current
         status of advantage or disadvantage selections. Also updates roll-specific messages and maintains
@@ -134,20 +140,17 @@ class MainWindow:
         :param roll_result: An instance of RollResult encapsulating details about the result of the dice roll.
         :type roll_result: RollResult
         """
-        if self.window['advantage_roll'].get():
-            roll_result.advantage = "advantage_roll"
-            self.window['advantage_text'].update(value="Rolling with Advantage")
-        elif self.window['disadvantage_roll'].get():
-            roll_result.advantage = "disadvantage_roll"
-            self.window['advantage_text'].update(value="Rolling with Disadvantage")
-        else:
-            self.window['advantage_text'].update(value="")
+
+        advantage = self.get_advantage_selection()
+        roll_result.advantage = advantage[1]
+        self.window['advantage_text'].update(value=f"{advantage[2]}")
 
         self.window['total_text'].update(value=f'{roll_result.get_shorthand()}')
         self.window['equal_sign'].update(value='=')
         self.window['dice_total'].update(value=f'{roll_result.total}')
 
-        if roll_result.num_dice == 1 and self.window['dice_type'].get() == 'd20':
+
+        if self.get_ai_selection() and is_d20_roll:
             result_message = self.roll_result_messages.result_message(roll_result.dice_total)
             self.window['message_text'].update(value=f'{result_message}')
         else:
