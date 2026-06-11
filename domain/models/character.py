@@ -33,6 +33,9 @@ class Character:
             - weapon: Optional Weapon object for attack checks.
     """
 
+    DEFAULT_CHARACTER_ID = "default"
+    DEFAULT_CHARACTER_NAME = "Default Character"
+
     def __init__(self, name, character_id, ability_scores=None, proficiency_bonus=2, save_bonus=0):
         self.name = name
         self.character_id = character_id
@@ -43,6 +46,23 @@ class Character:
         self.saving_throws = SavingThrows()
         self.default_presets=RollHistory()
         self.load_default_presets()
+
+    @classmethod
+    def create_default(cls):
+        return cls(
+            name=cls.DEFAULT_CHARACTER_NAME,
+            character_id=cls.DEFAULT_CHARACTER_ID,
+            ability_scores={
+                "Strength": 10,
+                "Dexterity": 10,
+                "Constitution": 10,
+                "Intelligence": 10,
+                "Wisdom": 10,
+                "Charisma": 10,
+            },
+            proficiency_bonus=0,
+            save_bonus=0,
+        )
 
     def __repr__(self):
         return f"Character(name={self.name}, character_id={self.character_id})"

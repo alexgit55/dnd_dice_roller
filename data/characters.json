@@ -1,26 +1,69 @@
 [
     {
+        "character_id": "default",
+        "name": "Default Character",
+        "proficiency_bonus": 0,
+        "save_bonus": 0,
+        "ability_scores": {
+            "Strength": 10,
+            "Dexterity": 10,
+            "Constitution": 10,
+            "Intelligence": 10,
+            "Wisdom": 10,
+            "Charisma": 10
+        },
+        "skills": {
+            "proficiencies": [],
+            "advantages": [],
+            "disadvantages": []
+        },
+        "saving_throws": {
+            "proficiencies": [],
+            "advantages": [],
+            "disadvantages": []
+        }
+    },
+    {
         "character_id": "c-001",
         "name": "Warryn",
         "proficiency_bonus": 4,
         "save_bonus": 2,
         "ability_scores": {
-          "Strength": 19,
-          "Dexterity": 14,
-          "Constitution": 18,
-          "Intelligence": 9,
-          "Wisdom": 12,
-          "Charisma": 10
+            "Strength": 19,
+            "Dexterity": 14,
+            "Constitution": 18,
+            "Intelligence": 9,
+            "Wisdom": 12,
+            "Charisma": 10
         },
-       "skills": {
-         "proficiencies": ["Animal Handling", "Athletics", "Intimidation", "Perception", "Survival"],
-         "advantages": ["Deception", "Sleight of Hand"],
-         "disadvantages": ["Stealth"]
-      },
-      "saving_throws": {
-        "proficiencies": ["Strength", "Constitution"],
-        "advantages": ["Dexterity", "Intelligence", "Wisdom", "Charisma"],
-        "disadvantages": []
-      }
+        "skills": {
+            "proficiencies": [
+                "Animal Handling",
+                "Athletics",
+                "Intimidation",
+                "Perception",
+                "Survival"
+            ],
+            "advantages": [
+                "Deception",
+                "Sleight of Hand"
+            ],
+            "disadvantages": [
+                "Stealth"
+            ]
+        },
+        "saving_throws": {
+            "proficiencies": [
+                "Strength",
+                "Constitution"
+            ],
+            "advantages": [
+                "Dexterity",
+                "Intelligence",
+                "Wisdom",
+                "Charisma"
+            ],
+            "disadvantages": []
+        }
     }
 ]

@@ -19,13 +19,11 @@ class MainWindow:
     :ivar window: Main GUI window for the dice rolling application.
     :type window: sg.Window
     """
-    def __init__(self, character, dice_roll_app_controller):
+    def __init__(self, dice_roll_app_controller):
         self.controller = dice_roll_app_controller
         sg.theme('DarkGrey15')
-        self.character=character
+        self.character=self.controller.character_service.get_character("default")
         self.roll_history = RollHistory()
-        (self.controller.
-            preset_service.load_presets())
         (self.controller.
             preset_service.add_character_default_presets(self.character))
         self.roll_result_messages = Messages()

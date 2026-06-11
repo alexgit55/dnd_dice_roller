@@ -1,15 +1,13 @@
 
 from ui.ui_settings import UISettings
-from storage.character_repository import CharacterRepository
 from ui.main_window import MainWindow
 from application.dice_roll_app_controller import DiceRollAppController
 
 if __name__ == '__main__':
-    character_list = CharacterRepository()
-    character_list.load_characters()
     dice_roll_app_controller = DiceRollAppController()
-
+    dice_roll_app_controller.character_service.load_characters()
+    dice_roll_app_controller.preset_service.load_presets()
 
     UISettings.apply_theme()
-    window = MainWindow(character_list.get_character("Warryn"), dice_roll_app_controller)
+    window = MainWindow(dice_roll_app_controller)
     window.run()
