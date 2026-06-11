@@ -22,7 +22,7 @@ class MainWindow:
     def __init__(self, dice_roll_app_controller):
         self.controller = dice_roll_app_controller
         sg.theme('DarkGrey15')
-        self.character=self.controller.character_service.get_character("default")
+        self.character=self.controller.character_service.get_character_by_id("default")
         self.roll_history = RollHistory()
         (self.controller.
             preset_service.add_character_default_presets(self.character))
@@ -32,6 +32,7 @@ class MainWindow:
                 preset_service.
                 get_presets_by_character(self.character.character_id),
             history_values=self.roll_history.get_rolls_by_type(),
+            character_list=self.controller.character_service.get_characters()
         )
         self.window = sg.Window('Dice Roller Application', self.layout, finalize=True)
 
@@ -80,6 +81,27 @@ class MainWindow:
                         sg.popup_ok('Please select a preset to remove.')
                         continue
                     self.remove_preset(current_preset)
+                case 'load_character':
+                    character = self.controller.character_service.get_character_by_name(values['character_list'])
+                    if character is None:
+                        sg.popup_ok('Please select a valid character.')
+                        continue
+                    self.controller.character_service.set_active_character(character.character_id)
+                    self.character = self.controller.character_service.get_active_character()
+                    self.controller.preset_service.clear_presets()
+                    self.controller.preset_service.load_presets()
+                    self.clear_roll_history()
+                    self.controller.preset_service.add_character_default_presets(self.character)
+                    self.refresh_roll_presets_list()
+
+                    self.window["character_name"].update(
+                        value=f"Currently Loaded Character: {self.character.name}")
+                case 'new_character':
+                    pass
+                case 'edit_character':
+                    pass
+                case 'delete_character':
+                    pass
                 case _ if event in (sg.WIN_CLOSED, 'exit'):
                     self.controller.preset_service.save_presets()
                     break
@@ -243,11 +265,14 @@ class MainWindow:
             # Enable the edit/remove preset buttons
             self.window['edit_preset'].update(disabled=False)
             self.window['remove_preset'].update(disabled=False)
+            self.window['roll_preset'].update(values=self.controller.
+                                              preset_service.
+                                              get_presets_by_character(self.character.character_id))
         else:
             self.window['edit_preset'].update(disabled=True)
             self.window['remove_preset'].update(disabled=True)
 
-        self.window['roll_preset'].update(values=self.controller.
+            self.window['roll_preset'].update(values=self.controller.
                                           preset_service.
                                           get_presets_by_type(roll_type=roll_type))
         self.window['roll_preset'].update(set_to_index=[])  # clear selection so you don’t load stale preset

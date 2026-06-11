@@ -20,15 +20,25 @@ class CharacterService:
     def save_characters(self, filename='data/characters.json'):
         CharacterRepository.save_characters_to_file(self.characters, filename)
 
-    def get_all_characters(self):
-        return self.characters
+    def get_characters(self):
+        return [character.name for character in self.characters]
 
-    def get_character(self, character_id):
+    def get_character_by_id(self, character_id):
         return next(
             (
                 character
                 for character in self.characters
                 if character.character_id == character_id
+            ),
+            None,
+        )
+
+    def get_character_by_name(self, character_name):
+        return next(
+            (
+                character
+                for character in self.characters
+                if character.name == character_name
             ),
             None,
         )
@@ -55,7 +65,7 @@ class CharacterService:
         return False
 
     def delete_character(self, character_id):
-        character = self.get_character(character_id)
+        character = self.get_character_by_id(character_id)
 
         if character is None:
             return False
@@ -75,7 +85,7 @@ class CharacterService:
         return True
 
     def set_active_character(self, character_id):
-        character = self.get_character(character_id)
+        character = self.get_character_by_id(character_id)
 
         if character is None:
             return False
@@ -87,7 +97,7 @@ class CharacterService:
         return self.active_character
 
     def get_default_character(self):
-        return self.get_character(Character.DEFAULT_CHARACTER_ID)
+        return self.get_character_by_id(Character.DEFAULT_CHARACTER_ID)
 
     def ensure_default_character(self, filename='data/characters.json'):
         if self.get_default_character() is None:

@@ -4,7 +4,7 @@ from domain.models.dice import Die
 from ui.ui_settings import UISettings
 
 
-def build_layout(*, preset_values, history_values):
+def build_layout(*, preset_values, history_values, character_list : list[str]):
     """
     Builds and returns the layout for a graphical user interface that enables users to define roll presets, roll dice, and view roll history.
 
@@ -26,6 +26,26 @@ def build_layout(*, preset_values, history_values):
             sg.Text("",
                     size=(60, 1),
                     key="character_name"),
+        ],
+        [
+            sg.Text("Character: ",),
+            sg.Combo(values=character_list,
+                     key="character_list",
+                     readonly=True,
+                     enable_events=True,
+                     size=(20, 1), ),
+            sg.Button("Load",
+                      key="load_character",
+                      enable_events=True,),
+            sg.Button("New",
+                      key="new_character",
+                      enable_events=True,),
+            sg.Button("Edit",
+                      key="edit_character",
+                      enable_events=True,),
+            sg.Button("Delete",
+                      key="delete_character",
+                      enable_events=True,),
         ],
         [
             sg.Text("AI Messages: ",),
