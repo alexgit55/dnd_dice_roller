@@ -20,6 +20,45 @@ class CharacterService:
     def save_characters(self, filename='data/characters.json'):
         CharacterRepository.save_characters_to_file(self.characters, filename)
 
+    def get_next_character_id(self):
+        """
+        Gets the next available character ID using the c-### format.
+
+        The default character is ignored. Existing IDs that do not match the
+        expected c-### format are also ignored.
+
+        Examples:
+            default only -> c-001
+            c-001 -> c-002
+            c-001, c-004 -> c-005
+
+        :return: The next available character ID.
+        :rtype: str
+        """
+        highest_character_number = 0
+
+        for character in self.characters:
+            character_id = character.character_id
+
+            if character_id == Character.DEFAULT_CHARACTER_ID:
+                continue
+
+            if not character_id.startswith("c-"):
+                continue
+
+            character_number = character_id.removeprefix("c-")
+
+            if not character_number.isdigit():
+                continue
+
+            highest_character_number = max(
+                highest_character_number,
+                int(character_number),
+            )
+
+        next_character_number = highest_character_number + 1
+        return f"c-{next_character_number:03}"
+
     def get_characters(self):
         return [character.name for character in self.characters]
 

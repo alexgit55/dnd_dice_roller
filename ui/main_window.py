@@ -1,9 +1,13 @@
 import FreeSimpleGUI as sg
 
 from domain.models.messages import Messages
+from domain.models.character import Character
 from domain.models.roll import RollResult, Roll
-from ui.window_layout import build_layout
 from domain.models.roll_history import RollHistory
+
+from ui.main_window_layout import build_layout
+from ui.character_window import CharacterWindow
+
 
 class MainWindow:
     """
@@ -82,31 +86,157 @@ class MainWindow:
                         continue
                     self.remove_preset(current_preset)
                 case 'load_character':
-                    character = self.controller.character_service.get_character_by_name(values['character_list'])
-                    if character is None:
-                        sg.popup_ok('Please select a valid character.')
-                        continue
-                    self.controller.character_service.set_active_character(character.character_id)
-                    self.character = self.controller.character_service.get_active_character()
-                    self.controller.preset_service.clear_presets()
-                    self.controller.preset_service.load_presets()
-                    self.clear_roll_history()
-                    self.controller.preset_service.add_character_default_presets(self.character)
-                    self.refresh_roll_presets_list()
-
-                    self.window["character_name"].update(
-                        value=f"Currently Loaded Character: {self.character.name}")
+                    self.load_character(values)
                 case 'new_character':
-                    pass
+                    self.new_character()
                 case 'edit_character':
-                    pass
+                    self.edit_character(values)
                 case 'delete_character':
-                    pass
+                    self.delete_character(values)
                 case _ if event in (sg.WIN_CLOSED, 'exit'):
                     self.controller.preset_service.save_presets()
+                    self.controller.character_service.save_characters()
                     break
 
         self.window.close()
+
+    def load_character(self, values):
+        selected_character_name = values['character_list']
+
+        if not selected_character_name:
+            sg.popup_ok('Please select a character.')
+            return
+
+        character = self.controller.character_service.get_character_by_name(selected_character_name)
+
+        if character is None:
+            sg.popup_ok('Please select a valid character.')
+            return
+
+        self.activate_character(character)
+        self.window["status_bar"].update(f"Loaded character {character.name}")
+
+    def new_character(self):
+        character = Character(
+            name="",
+            character_id=self.controller.character_service.get_next_character_id(),
+        )
+
+        character_window = CharacterWindow(character)
+        saved_character = character_window.run()
+        if saved_character is None:
+            return
+
+        self.controller.character_service.add_character(saved_character)
+        self.refresh_character_list()
+        self.activate_character(saved_character)
+
+        self.window["status_bar"].update(
+            f"Character {saved_character.name} created successfully"
+        )
+
+    def edit_character(self, values):
+        selected_character_name = values["character_list"]
+
+        if not selected_character_name:
+            sg.popup_ok("Please select a character to edit.")
+            return
+
+        character = self.controller.character_service.get_character_by_name(
+            selected_character_name
+        )
+
+        if character is None:
+            sg.popup_ok("Please select a valid character.")
+            return
+
+        if character.character_id == Character.DEFAULT_CHARACTER_ID:
+            sg.popup_ok("The default character cannot be edited.")
+            return
+
+        character_window = CharacterWindow(character)
+        updated_character = character_window.run()
+
+        if updated_character is None:
+            return
+
+        was_updated = self.controller.character_service.update_character(
+            updated_character
+        )
+
+        if not was_updated:
+            sg.popup_ok("Character could not be updated.")
+            return
+
+        self.refresh_character_list()
+        self.activate_character(updated_character)
+
+        self.window["status_bar"].update(
+            f"Character {updated_character.name} updated successfully"
+        )
+
+    def delete_character(self, values):
+        selected_character_name = values["character_list"]
+
+        if not selected_character_name:
+            sg.popup_ok("Please select a character to delete.")
+            return
+
+        character = self.controller.character_service.get_character_by_name(
+            selected_character_name
+        )
+
+        if character is None:
+            sg.popup_ok("Please select a valid character.")
+            return
+
+        if character.character_id == Character.DEFAULT_CHARACTER_ID:
+            sg.popup_ok("The default character cannot be deleted.")
+            return
+
+        confirmation = sg.popup_yes_no(
+            f'Are you sure you want to delete character "{character.name}"?'
+        )
+
+        if confirmation != "Yes":
+            return
+
+        was_deleted = self.controller.character_service.delete_character(
+            character.character_id
+        )
+
+        if not was_deleted:
+            sg.popup_ok("Character could not be deleted.")
+            return
+
+        self.refresh_character_list()
+        self.activate_character(
+            self.controller.character_service.get_active_character()
+        )
+
+        self.window["status_bar"].update(
+            f"Character {character.name} deleted successfully"
+        )
+
+    def activate_character(self, character):
+        self.controller.character_service.set_active_character(character.character_id)
+        self.character = self.controller.character_service.get_active_character()
+
+        self.controller.preset_service.clear_presets()
+        self.controller.preset_service.load_presets()
+        self.clear_roll_history()
+        self.controller.preset_service.add_character_default_presets(self.character)
+        self.refresh_roll_presets_list()
+
+        self.window["character_name"].update(
+            value=f"Currently Loaded Character: {self.character.name}"
+        )
+        self.window["character_list"].update(value=self.character.name)
+
+    def refresh_character_list(self):
+        self.window["character_list"].update(
+            values=self.controller.character_service.get_characters()
+        )
 
     def get_dice_roll(self):
         """

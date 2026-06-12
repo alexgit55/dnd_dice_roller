@@ -67,6 +67,22 @@ class Character:
     def __repr__(self):
         return f"Character(name={self.name}, character_id={self.character_id})"
 
+    def print_character(self):
+        print(f"Character Name: {self.name}")
+        print(f"Character ID: {self.character_id}")
+        print(f"Proficiency Bonus: {self.proficiency_bonus}")
+        print(f"Save Bonus: {self.save_bonus}")
+        print(f"Ability Scores:")
+        for ability, score in self.ability_scores.items():
+            print(f"{ability}: {score}")
+        print(f"Skills:")
+        for skill in self.skills.proficiencies:
+            print(f"- {skill}")
+        print(f"Saving Throws:")
+        for save in self.saving_throws.proficiencies:
+            print(f"- {save}")
+
+
     def check_advantage(self, check_name, check_type="skill"):
         """
         Checks if there is an advantage for a given check based on the type of check provided. The `check_name`
