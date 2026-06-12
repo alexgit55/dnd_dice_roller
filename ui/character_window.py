@@ -4,6 +4,20 @@ from ui.character_window_layout import build_layout, ABILITY_NAMES
 from domain.models.character import Character
 
 class CharacterWindow:
+    """
+    Represents a graphical user interface for viewing and editing character details.
+
+    This class encapsulates the creation of a character editing window using a third-party GUI library.
+    It provides functionality to build and collect character data based on user input and close the
+    window when operations are complete.
+
+    :ivar character: Holds the initial character data or None if no initial data is provided.
+    :type character: Optional[Character]
+    :ivar layout: Stores the layout of the GUI window.
+    :type layout: Any
+    :ivar window: Represents the GUI window object.
+    :type window: Any
+    """
     def __init__(self, character=None):
         self.character = character
         self.layout = build_layout(character)
@@ -26,6 +40,34 @@ class CharacterWindow:
         return character
 
     def build_character_from_values(self, values):
+        """
+        Constructs a character object using the provided input values.
+
+        This function processes the input dictionary to extract relevant details such as
+        character name, proficiency bonus, ability scores, skill data, and saving
+        throws data. It validates the mandatory fields and constructs the character
+        object using the provided data.
+
+        :param values: A dictionary containing all necessary fields to build a character.
+                       Keys include the following:
+                       - 'character_id': Unique identifier for the character.
+                       - 'character_name': The name of the character.
+                       - 'proficiency_bonus': Proficiency bonus of the character.
+                       - 'save_bonus': Saving throw bonus of the character.
+                       - 'ability_<ability_name>': Scores for different abilities (e.g., ability_STR, ability_DEX).
+                       - 'skill_proficiencies': List of skills in which the character has proficiencies.
+                       - 'skill_advantages': List of skills for which the character has advantages.
+                       - 'skill_disadvantages': List of skills for which the character has disadvantages.
+                       - 'save_proficiencies': List of saving throws in which the character has proficiencies.
+                       - 'save_advantages': List of saving throws for which the character has advantages.
+                       - 'save_disadvantages': List of saving throws for which the character has disadvantages.
+
+        :type values: dict
+
+        :return: An instance of the `Character` class built from the provided data.
+                 Returns `None` if validation fails (e.g., missing character name).
+        :rtype: Character or None
+        """
         character_name = values["character_name"].strip()
 
         if not character_name:

@@ -68,6 +68,13 @@ class Character:
         return f"Character(name={self.name}, character_id={self.character_id})"
 
     def print_character(self):
+        """
+        Prints the details of a character, including its name, ID, proficiency bonus, save bonus, ability scores,
+        skills, and saving throws. This method sequentially prints each attribute and iterates through the lists
+        of skills and saving throws to display their respective values.
+
+        :returns: None
+        """
         print(f"Character Name: {self.name}")
         print(f"Character ID: {self.character_id}")
         print(f"Proficiency Bonus: {self.proficiency_bonus}")

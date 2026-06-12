@@ -11,16 +11,25 @@ from ui.character_window import CharacterWindow
 
 class MainWindow:
     """
-    Manages the graphical user interface (GUI) for a dice rolling application.
+    Represents the main window of the Dice Roller Application.
 
-    This class initializes and provides functionality for a PySimpleGUI-based
-    interface to roll dice, manage roll presets, and display roll history. The
-    application supports normal rolls, advantage/disadvantage rolls, and includes
-    options to save, load, and edit roll presets.
+    This class manages the main graphical user interface (GUI) of the application, including layout
+    construction, event handling, and interactions with application services such as character and preset
+    management. It facilitates user interaction by providing tools for dice rolling, preset management,
+    character management, and history tracking directly within a PySimpleGUI window.
 
-    :ivar layout: Defines the layout structure of the GUI components.
-    :type layout: list
-    :ivar window: Main GUI window for the dice rolling application.
+    :ivar controller: The application controller that provides access to services for managing characters,
+        presets, and other application functionality.
+    :type controller: DiceRollAppController
+    :ivar character: The currently active character loaded in the application, fetched using the character service.
+    :type character: Character
+    :ivar roll_history: An instance for tracking dice roll history.
+    :type roll_history: RollHistory
+    :ivar roll_result_messages: A structure containing messages related to roll results.
+    :type roll_result_messages: Messages
+    :ivar layout: The layout of the PySimpleGUI window, constructed based on preset and character data.
+    :type layout: Any
+    :ivar window: The PySimpleGUI window instance used in the application.
     :type window: sg.Window
     """
     def __init__(self, dice_roll_app_controller):
@@ -101,6 +110,19 @@ class MainWindow:
         self.window.close()
 
     def load_character(self, values):
+        """
+        Loads a character based on the provided input values.
+
+        This method retrieves a character object by its name from provided values, validates
+        the input, and initiates the character activation process if the character is valid.
+        Pop-up notifications inform the user of invalid actions such as not selecting a
+        character or selecting an invalid character.
+
+        :param values: A dictionary containing input values. It must include a key
+                       'character_list' with the selected character's name as its value.
+        :type values: dict
+        :return: None
+        """
         selected_character_name = values['character_list']
 
         if not selected_character_name:
@@ -117,6 +139,16 @@ class MainWindow:
         self.window["status_bar"].update(f"Loaded character {character.name}")
 
     def new_character(self):
+        """
+        Creates a new character, processes its creation through a character setup window, and
+        updates the character list and status bar upon successful creation.
+
+        Characters are initialized with default attributes and passed to a setup window
+        for further configuration. The newly created character is added to the character
+        service and activated if the operation is not canceled.
+
+        :return: None
+        """
         character = Character(
             name="",
             character_id=self.controller.character_service.get_next_character_id(),
@@ -136,6 +168,18 @@ class MainWindow:
         )
 
     def edit_character(self, values):
+        """
+        Edits the properties of a selected character in the application. The method ensures
+        that a valid character is selected before opening the character editor window.
+        If the character is successfully updated, the character list is refreshed,
+        and the changes are reflected in the status bar.
+
+        :param values: A dictionary containing the parameters for the method. The key
+            "character_list" must contain the name of the character to edit.
+        :type values: dict
+
+        :return: None
+        """
         selected_character_name = values["character_list"]
 
         if not selected_character_name:
@@ -176,6 +220,15 @@ class MainWindow:
         )
 
     def delete_character(self, values):
+        """
+        Deletes a character selected from the character list. Provides confirmation dialogs
+        and checks to ensure valid selection. If the operation is successful, refreshes the
+        character list and activates the current active character.
+
+        :param values: Dictionary containing UI inputs. The key 'character_list' should
+            correspond to the selected character's name.
+        :return: None
+        """
         selected_character_name = values["character_list"]
 
         if not selected_character_name:
@@ -219,6 +272,15 @@ class MainWindow:
         )
 
     def activate_character(self, character):
+        """
+        Activates the specified character, updates internal state, and refreshes the UI elements
+        to reflect the newly loaded character. This includes setting the character as active,
+        reloading presets, clearing roll history, and adding default presets.
+
+        :param character: The character object to be activated.
+        :type character: Character
+        :return: None
+        """
         self.controller.character_service.set_active_character(character.character_id)
         self.character = self.controller.character_service.get_active_character()
 
@@ -234,6 +296,12 @@ class MainWindow:
         self.window["character_list"].update(value=self.character.name)
 
     def refresh_character_list(self):
+        """
+        Updates the character list in the UI by retrieving the latest characters
+        from the character service and setting them in the list widget.
+
+        :return: None
+        """
         self.window["character_list"].update(
             values=self.controller.character_service.get_characters()
         )
