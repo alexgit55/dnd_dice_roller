@@ -3,21 +3,26 @@
 
 class Checks:
     """
-    Checks class manages proficiency, advantage, and disadvantage states for ability checks.
+    Checks class manages proficiency, expertise, advantage, and disadvantage states for ability checks.
     Attributes:
         ability_map (dict): A mapping of ability names to their corresponding checks.
         proficiencies (list): List of checks the entity is proficient in.
+        expertise (list): List of checks the entity has expertise in.
         advantages (list): List of checks the entity has advantage on.
         disadvantages (list): List of checks the entity has disadvantage on.
     Methods:
         set_proficiencies(proficiencies):
             Sets the list of proficient checks.
+        set_expertise(expertise):
+            Sets the list of expertise checks.
         set_advantages(advantages):
             Sets the list of checks with advantage.
         set_disadvantages(disadvantages):
             Sets the list of checks with disadvantage.
         is_proficient(check):
             Returns True if the entity is proficient in the given check.
+        has_expertise(check):
+            Returns True if the entity has expertise in the given check.
         has_advantage(check):
             Returns True if the entity has advantage on the given check.
         has_disadvantage(check):
@@ -28,6 +33,7 @@ class Checks:
 
     def __init__(self):
         self.proficiencies = []
+        self.expertise = []
         self.advantages = []
         self.disadvantages = []
 
@@ -57,6 +63,24 @@ class Checks:
             proficiencies (list or any): The proficiencies to assign to the instance.
         """
         self.proficiencies = proficiencies
+
+    def get_expertise(self):
+        """
+        Retrieves the expertise checks associated with the object.
+
+        :return: A list containing the expertise checks of the object.
+        :rtype: list
+        """
+        return self.expertise
+
+    def set_expertise(self, expertise):
+        """
+        Sets the expertise checks for the instance.
+
+        Args:
+            expertise (list): The expertise checks to assign to the instance.
+        """
+        self.expertise = expertise
 
     def get_advantages(self):
         """
@@ -108,6 +132,18 @@ class Checks:
             bool: True if the check is in self.proficiencies, False otherwise.
         """
         return check in self.proficiencies
+
+    def has_expertise(self, check):
+        """
+        Determines if the specified check is in the list of expertise checks.
+
+        Args:
+            check (str): The name of the skill or save to check for expertise.
+
+        Returns:
+            bool: True if the check is in self.expertise, False otherwise.
+        """
+        return check in self.expertise
 
     def has_advantage(self, check):
         """

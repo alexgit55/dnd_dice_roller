@@ -14,6 +14,7 @@
         },
         "skills": {
             "proficiencies": [],
+            "expertise": [],
             "advantages": [],
             "disadvantages": []
         },
@@ -44,6 +45,7 @@
                 "Perception",
                 "Survival"
             ],
+            "expertise": [],
             "advantages": [
                 "Deception",
                 "Sleight of Hand"

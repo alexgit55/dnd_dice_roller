@@ -199,6 +199,7 @@ class Character:
             "ability_scores": self.ability_scores,
             "skills": {
                 "proficiencies": self.skills.get_proficiencies(),
+                "expertise": self.skills.get_expertise(),
                 "advantages": self.skills.get_advantages(),
                 "disadvantages": self.skills.get_disadvantages(),
             },
@@ -234,6 +235,7 @@ class Character:
 
         skills_data = data.get("skills", {})
         character.skills.set_proficiencies(skills_data.get("proficiencies", []))
+        character.skills.set_expertise(skills_data.get("expertise", []))
         character.skills.set_advantages(skills_data.get("advantages", []))
         character.skills.set_disadvantages(skills_data.get("disadvantages", []))
 
@@ -266,27 +268,29 @@ class Character:
         check_type: "skill" or "save".
         """
         ability = None
-        is_proficient = False
+        proficiency_multiplier = 0
         bonus = 0
 
         if check_type == "skill":
             ability = self.skills.ability_map.get(check)
-            is_proficient = self.skills.is_proficient(check)
+            if self.skills.has_expertise(check):
+                proficiency_multiplier = 2
+            elif self.skills.is_proficient(check):
+                proficiency_multiplier = 1
         elif check_type == "save":
             ability = self.saving_throws.ability_map.get(check)
-            is_proficient = self.saving_throws.is_proficient(check)
+            if self.saving_throws.is_proficient(check):
+                proficiency_multiplier = 1
             bonus += self.save_bonus
         elif check_type == "ability":
             ability = check
-
 
         if ability is not None:
             modifier = self.calculate_ability_modifier(ability)
         else:
             modifier = 0
 
-        if is_proficient:
-            modifier += self.proficiency_bonus
+        modifier += self.proficiency_bonus * proficiency_multiplier
 
         return modifier + bonus
 

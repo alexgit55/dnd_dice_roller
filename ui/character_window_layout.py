@@ -12,6 +12,142 @@ ABILITY_NAMES = [
     "Charisma",
 ]
 
+def skill_key(prefix, skill_name):
+    return f"{prefix}_{skill_name}"
+
+def save_key(prefix, save_name):
+    return f"{prefix}_{save_name}"
+
+def build_skill_rows(
+    skill_names,
+    selected_skill_proficiencies,
+    selected_skill_expertise,
+    selected_skill_advantages,
+    selected_skill_disadvantages,
+):
+    rows = [
+        [
+            sg.Push(),
+            sg.Text("Skill", size=(20, 1), font=("Arial", 14, "bold")),
+            sg.Text("Proficiency", size=(20, 1), font=("Arial", 14, "bold")),
+            sg.Text("Roll State", size=(20, 1), font=("Arial", 14, "bold")),
+        ]
+    ]
+
+    for skill_name in skill_names:
+        proficiency_group = f"skill_proficiency_{skill_name}"
+        advantage_group = f"skill_advantage_{skill_name}"
+
+        has_expertise = skill_name in selected_skill_expertise
+        is_proficient = skill_name in selected_skill_proficiencies and not has_expertise
+        has_advantage = skill_name in selected_skill_advantages
+        has_disadvantage = skill_name in selected_skill_disadvantages
+
+        rows.append(
+            [
+                sg.Text(skill_name, size=(20, 1)),
+                sg.Radio(
+                    "None",
+                    proficiency_group,
+                    default=not is_proficient and not has_expertise,
+                    key=skill_key("skill_prof_none", skill_name),
+                ),
+                sg.Radio(
+                    "Proficient",
+                    proficiency_group,
+                    default=is_proficient,
+                    key=skill_key("skill_prof_proficient", skill_name),
+                ),
+                sg.Radio(
+                    "Expertise",
+                    proficiency_group,
+                    default=has_expertise,
+                    key=skill_key("skill_prof_expertise", skill_name),
+                ),
+                sg.Push(),
+                sg.Radio(
+                    "None",
+                    advantage_group,
+                    default=not has_advantage and not has_disadvantage,
+                    key=skill_key("skill_adv_none", skill_name),
+                ),
+                sg.Radio(
+                    "Advantage",
+                    advantage_group,
+                    default=has_advantage,
+                    key=skill_key("skill_adv_advantage", skill_name),
+                ),
+                sg.Radio(
+                    "Disadvantage",
+                    advantage_group,
+                    default=has_disadvantage,
+                    key=skill_key("skill_adv_disadvantage", skill_name),
+                ),
+            ]
+        )
+
+    return rows
+
+def build_saving_throw_rows(
+    saving_throw_names,
+    selected_save_proficiencies,
+    selected_save_advantages,
+    selected_save_disadvantages,
+):
+    rows = [
+        [
+            sg.Text("Saving Throw", size=(20, 1), font=("Arial", 14, "bold")),
+            sg.Text("Proficiency", size=(20, 1), font=("Arial", 14, "bold")),
+            sg.Text("Roll State", size=(20, 1), font=("Arial", 14, "bold"))
+        ]
+    ]
+
+    for save_name in saving_throw_names:
+        proficiency_group = f"save_proficiency_{save_name}"
+        advantage_group = f"save_advantage_{save_name}"
+
+        is_proficient = save_name in selected_save_proficiencies
+        has_advantage = save_name in selected_save_advantages
+        has_disadvantage = save_name in selected_save_disadvantages
+
+        rows.append(
+            [
+                sg.Text(save_name, size=(20, 1)),
+                sg.Radio(
+                    "None",
+                    proficiency_group,
+                    default=not is_proficient,
+                    key=save_key("save_prof_none", save_name),
+                ),
+                sg.Radio(
+                    "Proficient",
+                    proficiency_group,
+                    default=is_proficient,
+                    key=save_key("save_prof_proficient", save_name),
+                ),
+                sg.Push(),
+                sg.Radio(
+                    "None",
+                    advantage_group,
+                    default=not has_advantage and not has_disadvantage,
+                    key=save_key("save_adv_none", save_name),
+                ),
+                sg.Radio(
+                    "Advantage",
+                    advantage_group,
+                    default=has_advantage,
+                    key=save_key("save_adv_advantage", save_name),
+                ),
+                sg.Radio(
+                    "Disadvantage",
+                    advantage_group,
+                    default=has_disadvantage,
+                    key=save_key("save_adv_disadvantage", save_name),
+                ),
+            ]
+        )
+
+    return rows
 
 def build_layout(character=None):
     """
@@ -33,6 +169,11 @@ def build_layout(character=None):
 
     selected_skill_proficiencies = (
         character.skills.get_proficiencies()
+        if character
+        else []
+    )
+    selected_skill_expertise = (
+        character.skills.get_expertise()
         if character
         else []
     )
@@ -124,31 +265,17 @@ def build_layout(character=None):
         "Skills",
         layout=[
             [
-                sg.Text("Proficient", size=(24, 1)),
-                sg.Text("Advantage", size=(24, 1)),
-                sg.Text("Disadvantage", size=(24, 1)),
-            ],
-            [
-                sg.Listbox(
-                    values=skill_names,
-                    default_values=selected_skill_proficiencies,
-                    select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
-                    key="skill_proficiencies",
-                    size=(24, 12),
-                ),
-                sg.Listbox(
-                    values=skill_names,
-                    default_values=selected_skill_advantages,
-                    select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
-                    key="skill_advantages",
-                    size=(24, 12),
-                ),
-                sg.Listbox(
-                    values=skill_names,
-                    default_values=selected_skill_disadvantages,
-                    select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
-                    key="skill_disadvantages",
-                    size=(24, 12),
+                sg.Column(
+                    build_skill_rows(
+                        skill_names,
+                        selected_skill_proficiencies,
+                        selected_skill_expertise,
+                        selected_skill_advantages,
+                        selected_skill_disadvantages,
+                    ),
+                    scrollable=True,
+                    vertical_scroll_only=True,
+                    size=(780, 360),
                 ),
             ],
         ],
@@ -158,31 +285,16 @@ def build_layout(character=None):
         "Saving Throws",
         layout=[
             [
-                sg.Text("Proficient", size=(24, 1)),
-                sg.Text("Advantage", size=(24, 1)),
-                sg.Text("Disadvantage", size=(24, 1)),
-            ],
-            [
-                sg.Listbox(
-                    values=saving_throw_names,
-                    default_values=selected_save_proficiencies,
-                    select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
-                    key="save_proficiencies",
-                    size=(24, 6),
-                ),
-                sg.Listbox(
-                    values=saving_throw_names,
-                    default_values=selected_save_advantages,
-                    select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
-                    key="save_advantages",
-                    size=(24, 6),
-                ),
-                sg.Listbox(
-                    values=saving_throw_names,
-                    default_values=selected_save_disadvantages,
-                    select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
-                    key="save_disadvantages",
-                    size=(24, 6),
+                sg.Column(
+                    build_saving_throw_rows(
+                        saving_throw_names,
+                        selected_save_proficiencies,
+                        selected_save_advantages,
+                        selected_save_disadvantages,
+                    ),
+                    scrollable=True,
+                    vertical_scroll_only=True,
+                    size=(780, 180),
                 ),
             ],
         ],

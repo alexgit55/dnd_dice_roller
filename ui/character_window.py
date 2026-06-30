@@ -2,6 +2,7 @@ import FreeSimpleGUI as sg
 
 from ui.character_window_layout import build_layout, ABILITY_NAMES
 from domain.models.character import Character
+from domain.models.character_traits import SavingThrows, Skills
 
 class CharacterWindow:
     """
@@ -74,6 +75,35 @@ class CharacterWindow:
             sg.popup_ok("Character name is required.")
             return None
 
+        skill_proficiencies = []
+        skill_expertise = []
+        skill_advantages = []
+        skill_disadvantages = []
+
+        for skill_name in Skills.ability_map.keys():
+            if values[f"skill_prof_proficient_{skill_name}"]:
+                skill_proficiencies.append(skill_name)
+            elif values[f"skill_prof_expertise_{skill_name}"]:
+                skill_expertise.append(skill_name)
+
+            if values[f"skill_adv_advantage_{skill_name}"]:
+                skill_advantages.append(skill_name)
+            elif values[f"skill_adv_disadvantage_{skill_name}"]:
+                skill_disadvantages.append(skill_name)
+
+        save_proficiencies = []
+        save_advantages = []
+        save_disadvantages = []
+
+        for save_name in SavingThrows.ability_map.keys():
+            if values[f"save_prof_proficient_{save_name}"]:
+                save_proficiencies.append(save_name)
+
+            if values[f"save_adv_advantage_{save_name}"]:
+                save_advantages.append(save_name)
+            elif values[f"save_adv_disadvantage_{save_name}"]:
+                save_disadvantages.append(save_name)
+
         character_data = {
             "character_id": values["character_id"],
             "name": character_name,
@@ -84,9 +114,10 @@ class CharacterWindow:
                 for ability_name in ABILITY_NAMES
             },
             "skills": {
-                "proficiencies": values["skill_proficiencies"],
-                "advantages": values["skill_advantages"],
-                "disadvantages": values["skill_disadvantages"],
+                "proficiencies": skill_proficiencies,
+                "expertise": skill_expertise,
+                "advantages": skill_advantages,
+                "disadvantages": skill_disadvantages,
             },
             "saving_throws": {
                 "proficiencies": values["save_proficiencies"],
