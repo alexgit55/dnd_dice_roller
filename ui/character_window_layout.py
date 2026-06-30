@@ -85,6 +85,7 @@ def build_skill_rows(
                 ),
             ]
         )
+        rows.append([sg.HorizontalSeparator()])
 
     return rows
 
@@ -146,6 +147,7 @@ def build_saving_throw_rows(
                 ),
             ]
         )
+        rows.append([sg.HorizontalSeparator()])
 
     return rows
 

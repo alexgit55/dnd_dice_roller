@@ -120,9 +120,9 @@ class CharacterWindow:
                 "disadvantages": skill_disadvantages,
             },
             "saving_throws": {
-                "proficiencies": values["save_proficiencies"],
-                "advantages": values["save_advantages"],
-                "disadvantages": values["save_disadvantages"],
+                "proficiencies": save_proficiencies,
+                "advantages": save_advantages,
+                "disadvantages": save_disadvantages,
             },
         }
 
